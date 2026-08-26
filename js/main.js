@@ -3,15 +3,11 @@
 
   var prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  /* ---------- Wire up the Google Form embed from config.js ---------- */
-  var formFrame = document.getElementById("registrationForm");
-  if (formFrame) {
-    formFrame.setAttribute("src", SITE_CONFIG.GOOGLE_FORM_URL);
-  }
-
-  var fallbackLink = document.getElementById("formFallbackLink");
-  if (fallbackLink) {
-    fallbackLink.setAttribute("href", SITE_CONFIG.GOOGLE_FORM_URL.replace("?embedded=true", ""));
+  /* ---------- Registration form help link from config.js ---------- */
+  var formHelpEmail = document.getElementById("formHelpEmail");
+  if (formHelpEmail) {
+    formHelpEmail.textContent = SITE_CONFIG.CONTACT_EMAIL;
+    formHelpEmail.setAttribute("href", "mailto:" + SITE_CONFIG.CONTACT_EMAIL);
   }
 
   /* ---------- Footer contact + social from config.js ---------- */

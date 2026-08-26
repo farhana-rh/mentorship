@@ -30,7 +30,10 @@
         <span>Cohort 1 | 2026</span>
       </div>
     </div>
-    <a href="#register" class="btn btn-primary header-cta">Register</a>
+    <div class="header-actions">
+      <a href="mentors.html" class="btn btn-ghost header-cta">Mentors</a>
+      <a href="#register" class="btn btn-primary header-cta">Register</a>
+    </div>
   </div>
 </header>
 
@@ -246,11 +249,135 @@
         <p class="section-sub">Register as a Mentee</p>
         <p class="lede">Complete the application below. The information you provide will help the WIE organizing committee understand your goals and preferences and support the mentor–mentee matching process.</p>
 
-        <div class="form-embed">
-          <iframe id="registrationForm" title="INSB WIE Mentorship Program mentee registration form" src="" loading="lazy" width="640" height="1500" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
-        </div>
+        <form id="registrationForm" class="reg-form" novalidate>
 
-        <p class="form-fallback">Form not loading? <a id="formFallbackLink" href="#" target="_blank" rel="noopener noreferrer">Open it in a new tab ↗</a></p>
+          <fieldset class="form-section">
+            <legend>About You</legend>
+
+            <div class="form-field">
+              <label for="fullName">Full Name <span class="req">*</span></label>
+              <input type="text" id="fullName" name="fullName" autocomplete="name" required />
+            </div>
+
+            <div class="form-field">
+              <label for="nsuId">NSU ID <span class="req">*</span></label>
+              <input type="text" id="nsuId" name="nsuId" inputmode="numeric" required />
+            </div>
+
+            <div class="form-field">
+              <label for="nsuEmail">NSU Email <span class="req">*</span></label>
+              <input type="email" id="nsuEmail" name="nsuEmail" autocomplete="email" required />
+            </div>
+
+            <div class="form-field">
+              <label for="department">Department / Major <span class="req">*</span></label>
+              <select id="department" name="department" required></select>
+            </div>
+
+            <div class="form-field">
+              <label for="academicYear">Current Academic Year / Semester <span class="req">*</span></label>
+              <select id="academicYear" name="academicYear" required></select>
+            </div>
+
+            <div class="form-field">
+              <label for="cgpaRange">CGPA Range <span class="req">*</span></label>
+              <select id="cgpaRange" name="cgpaRange" required></select>
+              <p class="field-hint">Used only to help us understand applicants and support mentor–mentee matching — not a selection criterion.</p>
+            </div>
+          </fieldset>
+
+          <fieldset class="form-section">
+            <legend>Your Goals</legend>
+
+            <div class="form-field">
+              <span class="form-field-label">What areas are you currently interested in? <span class="req">*</span></span>
+              <div class="checkbox-grid" id="interestAreasGroup"></div>
+              <input type="text" id="interestAreasOther" class="other-input is-hidden" placeholder="Tell us more" />
+            </div>
+
+            <div class="form-field">
+              <span class="form-field-label">What would you primarily like to gain from this mentorship program? <span class="req">*</span></span>
+              <div class="checkbox-grid" id="goalsGroup"></div>
+              <input type="text" id="goalsOther" class="other-input is-hidden" placeholder="Tell us more" />
+            </div>
+
+            <div class="form-field">
+              <label for="whyJoin">What motivated you to apply for the INSB WIE Mentorship Program, and what do you hope to achieve through the experience? <span class="req">*</span></label>
+              <textarea id="whyJoin" name="whyJoin" rows="4" required></textarea>
+            </div>
+          </fieldset>
+
+          <fieldset class="form-section">
+            <legend>Mentor Preferences</legend>
+            <p class="field-hint">Your preferences will be considered, but mentor assignment is subject to availability and compatibility. <a href="mentors.html" target="_blank" rel="noopener noreferrer">See mentor profiles ↗</a></p>
+
+            <div class="form-field">
+              <label for="mentorChoice1">First-choice mentor <span class="req">*</span></label>
+              <select id="mentorChoice1" name="mentorChoice1" required></select>
+            </div>
+
+            <div class="form-field">
+              <label for="mentorChoice2">Second-choice mentor</label>
+              <select id="mentorChoice2" name="mentorChoice2"></select>
+            </div>
+
+            <div class="form-field">
+              <label for="mentorChoice3">Third-choice mentor</label>
+              <select id="mentorChoice3" name="mentorChoice3"></select>
+            </div>
+
+            <p class="field-error is-hidden" id="mentorChoiceError">Please choose a different mentor for each preference.</p>
+
+            <div class="form-field">
+              <label for="whyMentor">Why did you choose your preferred mentor(s)?</label>
+              <textarea id="whyMentor" name="whyMentor" rows="3"></textarea>
+            </div>
+
+            <div class="form-field">
+              <span class="form-field-label">What qualities or expertise would you value most in a mentor?</span>
+              <div class="checkbox-grid" id="mentorQualitiesGroup"></div>
+            </div>
+          </fieldset>
+
+          <fieldset class="form-section">
+            <legend>Availability</legend>
+
+            <div class="form-field">
+              <span class="form-field-label">Preferred meeting format <span class="req">*</span></span>
+              <div class="radio-grid" id="meetingFormatGroup"></div>
+            </div>
+
+            <div class="form-field">
+              <span class="form-field-label">Preferred meeting frequency <span class="req">*</span></span>
+              <div class="radio-grid" id="meetingFrequencyGroup"></div>
+            </div>
+
+            <div class="form-field">
+              <span class="form-field-label">Preferred meeting time <span class="req">*</span></span>
+              <div class="radio-grid" id="meetingTimeGroup"></div>
+            </div>
+          </fieldset>
+
+          <fieldset class="form-section">
+            <legend>CV</legend>
+
+            <div class="form-field">
+              <label for="cvFile">Upload your latest CV/Resume (PDF, max 5MB) <span class="req">*</span></label>
+              <input type="file" id="cvFile" name="cvFile" accept="application/pdf" required />
+              <p class="field-hint">This will be used only for program-related purposes and mentor–mentee matching.</p>
+              <p class="field-error is-hidden" id="cvFileError"></p>
+            </div>
+          </fieldset>
+
+          <div class="form-submit">
+            <button type="submit" class="btn btn-primary btn-block" id="submitBtn">
+              <span class="btn-label">Submit Application</span>
+            </button>
+            <p class="form-status" id="formStatus" role="status" aria-live="polite"></p>
+          </div>
+        </form>
+
+        <p class="form-help">Trouble with the form? Email <a id="formHelpEmail" href="#"></a></p>
       </div>
     </div>
   </section>
@@ -375,6 +502,7 @@
 </footer>
 
 <script src="js/config.js"></script>
+<script src="js/form.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

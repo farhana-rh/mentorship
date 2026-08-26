@@ -1,0 +1,227 @@
+(function () {
+  "use strict";
+
+  var form = document.getElementById("registrationForm");
+  if (!form) return;
+
+  var OPTIONS = SITE_CONFIG.FORM_OPTIONS;
+
+  function el(tag, props) {
+    var node = document.createElement(tag);
+    if (props) Object.keys(props).forEach(function (key) { node[key] = props[key]; });
+    return node;
+  }
+
+  function populateSelect(id, options, placeholder) {
+    var select = document.getElementById(id);
+    if (!select) return;
+    select.appendChild(el("option", { value: "", disabled: true, selected: true, textContent: placeholder }));
+    options.forEach(function (opt) {
+      select.appendChild(el("option", { value: opt, textContent: opt }));
+    });
+  }
+
+  function populateChips(containerId, name, options, type) {
+    var container = document.getElementById(containerId);
+    if (!container) return;
+    options.forEach(function (opt, i) {
+      var input = el("input", {
+        type: type,
+        name: type === "checkbox" ? name + "[]" : name,
+        id: name + "_" + i,
+        value: opt,
+      });
+      var label = el("label", { className: "chip" });
+      label.appendChild(input);
+      label.appendChild(el("span", { textContent: opt }));
+      container.appendChild(label);
+    });
+  }
+
+  populateSelect("department", OPTIONS.departments, "Select your department");
+  populateSelect("academicYear", OPTIONS.academicYears, "Select your year / semester");
+  populateSelect("cgpaRange", OPTIONS.cgpaRanges, "Select your CGPA range");
+
+  var mentorNames = (SITE_CONFIG.MENTORS || []).map(function (m) { return m.name; });
+  var mentorPlaceholders = {
+    mentorChoice1: "Select your first-choice mentor",
+    mentorChoice2: "Select your second-choice mentor (optional)",
+    mentorChoice3: "Select your third-choice mentor (optional)",
+  };
+  Object.keys(mentorPlaceholders).forEach(function (id) {
+    populateSelect(id, mentorNames, mentorPlaceholders[id]);
+  });
+
+  populateChips("interestAreasGroup", "interestAreas", OPTIONS.interestAreas, "checkbox");
+  populateChips("goalsGroup", "goals", OPTIONS.goals, "checkbox");
+  populateChips("mentorQualitiesGroup", "mentorQualities", OPTIONS.mentorQualities, "checkbox");
+  populateChips("meetingFormatGroup", "meetingFormat", OPTIONS.meetingFormats, "radio");
+  populateChips("meetingFrequencyGroup", "meetingFrequency", OPTIONS.meetingFrequencies, "radio");
+  populateChips("meetingTimeGroup", "meetingTime", OPTIONS.meetingTimes, "radio");
+
+  /* ---------- "Other" free-text reveal ---------- */
+  function wireOtherReveal(groupId, otherInputId) {
+    var group = document.getElementById(groupId);
+    var otherInput = document.getElementById(otherInputId);
+    if (!group || !otherInput) return;
+    group.addEventListener("change", function () {
+      var otherChecked = Array.prototype.some.call(
+        group.querySelectorAll('input[type="checkbox"]'),
+        function (cb) { return cb.value === "Other" && cb.checked; }
+      );
+      otherInput.classList.toggle("is-hidden", !otherChecked);
+      if (!otherChecked) otherInput.value = "";
+    });
+  }
+  wireOtherReveal("interestAreasGroup", "interestAreasOther");
+  wireOtherReveal("goalsGroup", "goalsOther");
+
+  /* ---------- Mentor choices must be distinct ---------- */
+  var mentorSelects = ["mentorChoice1", "mentorChoice2", "mentorChoice3"]
+    .map(function (id) { return document.getElementById(id); })
+    .filter(Boolean);
+  var mentorError = document.getElementById("mentorChoiceError");
+
+  function validateMentorChoices() {
+    var values = mentorSelects.map(function (s) { return s.value; }).filter(Boolean);
+    var unique = values.filter(function (v, i) { return values.indexOf(v) === i; });
+    var valid = values.length === unique.length;
+    if (mentorError) mentorError.classList.toggle("is-hidden", valid);
+    return valid;
+  }
+  mentorSelects.forEach(function (s) { s.addEventListener("change", validateMentorChoices); });
+
+  /* ---------- CV file read + validation ---------- */
+  var cvInput = document.getElementById("cvFile");
+  var cvError = document.getElementById("cvFileError");
+  var MAX_CV_BYTES = (SITE_CONFIG.MAX_CV_SIZE_MB || 5) * 1024 * 1024;
+
+  function readCvAsBase64() {
+    return new Promise(function (resolve, reject) {
+      var file = cvInput && cvInput.files && cvInput.files[0];
+      if (!file) {
+        reject(new Error("Please attach your CV."));
+        return;
+      }
+      if (file.type !== "application/pdf") {
+        reject(new Error("Please upload your CV as a PDF file."));
+        return;
+      }
+      if (file.size > MAX_CV_BYTES) {
+        reject(new Error("Your CV must be smaller than " + (SITE_CONFIG.MAX_CV_SIZE_MB || 5) + " MB."));
+        return;
+      }
+      var reader = new FileReader();
+      reader.onload = function () {
+        resolve({
+          base64: String(reader.result).split(",")[1],
+          mimeType: file.type,
+          fileName: file.name,
+          sizeBytes: file.size,
+        });
+      };
+      reader.onerror = function () { reject(new Error("Could not read the selected file.")); };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  /* ---------- Collect + submit ---------- */
+  var statusEl = document.getElementById("formStatus");
+  var submitBtn = document.getElementById("submitBtn");
+  var submitLabel = submitBtn.querySelector(".btn-label");
+
+  function checkedValues(groupId) {
+    var group = document.getElementById(groupId);
+    if (!group) return [];
+    return Array.prototype.filter
+      .call(group.querySelectorAll('input[type="checkbox"]'), function (cb) { return cb.checked; })
+      .map(function (cb) { return cb.value; });
+  }
+
+  function radioValue(groupId) {
+    var group = document.getElementById(groupId);
+    var checked = group && group.querySelector('input[type="radio"]:checked');
+    return checked ? checked.value : "";
+  }
+
+  function setStatus(message, kind) {
+    if (!statusEl) return;
+    statusEl.textContent = message;
+    statusEl.className = "form-status" + (kind ? " is-" + kind : "");
+  }
+
+  form.addEventListener("submit", function (evt) {
+    evt.preventDefault();
+    setStatus("", "");
+    if (cvError) cvError.textContent = "";
+
+    if (!form.reportValidity()) return;
+    if (!validateMentorChoices()) return;
+
+    var interestAreas = checkedValues("interestAreasGroup");
+    var goals = checkedValues("goalsGroup");
+    if (!interestAreas.length) {
+      setStatus("Please select at least one area of interest.", "error");
+      return;
+    }
+    if (!goals.length) {
+      setStatus("Please select at least one program goal.", "error");
+      return;
+    }
+
+    if (!SITE_CONFIG.APPS_SCRIPT_URL) {
+      setStatus("Registration isn't connected yet — please email " + SITE_CONFIG.CONTACT_EMAIL + " instead.", "error");
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitLabel.textContent = "Submitting…";
+
+    readCvAsBase64()
+      .then(function (cv) {
+        var payload = {
+          fullName: form.fullName.value.trim(),
+          nsuId: form.nsuId.value.trim(),
+          nsuEmail: form.nsuEmail.value.trim(),
+          department: form.department.value,
+          academicYear: form.academicYear.value,
+          cgpaRange: form.cgpaRange.value,
+          interestAreas: interestAreas,
+          interestAreasOther: form.interestAreasOther.value.trim(),
+          goals: goals,
+          goalsOther: form.goalsOther.value.trim(),
+          whyJoin: form.whyJoin.value.trim(),
+          mentorChoice1: form.mentorChoice1.value,
+          mentorChoice2: form.mentorChoice2.value,
+          mentorChoice3: form.mentorChoice3.value,
+          whyMentor: form.whyMentor.value.trim(),
+          mentorQualities: checkedValues("mentorQualitiesGroup"),
+          meetingFormat: radioValue("meetingFormatGroup"),
+          meetingFrequency: radioValue("meetingFrequencyGroup"),
+          meetingTime: radioValue("meetingTimeGroup"),
+          cv: cv,
+        };
+
+        // Plain-string body keeps this a "simple request" (no custom Content-Type),
+        // which avoids a CORS preflight that the Apps Script Web App can't answer.
+        return fetch(SITE_CONFIG.APPS_SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+      })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.status !== "ok") throw new Error(data.message || "Something went wrong. Please try again.");
+        form.reset();
+        document.querySelectorAll(".other-input").forEach(function (i) { i.classList.add("is-hidden"); });
+        setStatus("You're registered! We'll be in touch by email.", "success");
+      })
+      .catch(function (err) {
+        setStatus(err.message || ("Something went wrong. Please try again, or email " + SITE_CONFIG.CONTACT_EMAIL + "."), "error");
+      })
+      .then(function () {
+        submitBtn.disabled = false;
+        submitLabel.textContent = "Submit Application";
+      });
+  });
+})();

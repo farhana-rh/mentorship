@@ -1,14 +1,14 @@
 # INSB WIE Mentorship Program — Cohort 1 | 2026
 
-A single-page, mobile-first registration site for the IEEE NSU SB WIE Affinity Group's mentorship program, built for QR-code and social-media traffic. Registration itself happens through an **embedded Google Form** (Google handles storage via the linked Sheet) — there is no backend, database, authentication, or custom form-submission code.
+A single-page, mobile-first registration site for the IEEE NSU SB WIE Affinity Group's mentorship program, built for QR-code and social-media traffic. Registration happens through a **custom-built, themed form** on the page itself, which submits to a **Google Apps Script Web App** that validates it, uploads the CV to Drive, and appends a row to a Google Sheet. There is no server to host — Google runs the backend script, but there's no traditional database, hosting, or authentication layer either.
 
 ## Architecture
 
 ```
-Custom website  →  Branded registration section  →  Embedded Google Form  →  Google Sheet
+Custom website  →  Custom-themed registration form  →  Apps Script Web App  →  Google Sheet + Drive (CVs)
 ```
 
-The site is informational + conversion-focused; the Google Form is the actual registration mechanism, embedded directly in the page (not just linked out to).
+The form fields, options, and styling all live in this repo; only the submission endpoint is Google-hosted. See [`apps-script/README.md`](apps-script/README.md) for backend setup.
 
 ## Stack
 
@@ -17,10 +17,12 @@ Plain HTML + CSS + vanilla JS. No build step, no dependencies, no Node.js requir
 ## File structure
 
 ```
-index.html            All sections: hero, program highlights, what you gain, how it works, registration (embedded form), FAQ, final CTA, footer
-css/style.css          Mobile-first design tokens + components (thick outlines, offset shadows, decorative stars) + breakpoints
-js/config.js           Single source of truth for GOOGLE_FORM_URL, contact info, and social links
-js/main.js             Wires the form embed, header scroll state, staggered scroll-reveal, FAQ accordion
+index.html            All sections: hero, program highlights, what you gain, how it works, registration (custom form), FAQ, final CTA, footer
+css/style.css          Mobile-first design tokens + components (thick outlines, offset shadows, decorative stars) + breakpoints, incl. form styling
+js/config.js           Single source of truth for APPS_SCRIPT_URL, form field options, contact info, and social links
+js/main.js             Header scroll state, staggered scroll-reveal, FAQ accordion, footer contact links
+js/form.js             Builds the registration form's dropdowns/checkboxes from config, validates input, submits to Apps Script
+apps-script/           Google Apps Script backend (Code.gs) + its own setup README
 assets/images/          IEEE NSU SB and WIE Affinity Group logos + favicon (extracted from the program proposal doc)
 ```
 
@@ -29,13 +31,15 @@ assets/images/          IEEE NSU SB and WIE Affinity Group logos + favicon (extr
 Everything below lives in **`js/config.js`** — edit that one file and the whole site updates.
 
 ```js
-GOOGLE_FORM_URL: "https://docs.google.com/forms/d/e/.../viewform?embedded=true",
+APPS_SCRIPT_URL: "",  // TODO: set after deploying apps-script/Code.gs — see apps-script/README.md
 CONTACT_EMAIL: "ieeewie.nsu@gmail.com",
 CONTACT_PHONES: ["+8801710097856", "+8801684382112"],
 SOCIAL: { facebook: "...", instagram: "...", linkedin: "..." }  // TODO: replace with real links
+FORM_OPTIONS: { departments: [...], academicYears: [...], mentors: [...], ... }
 ```
 
-- `GOOGLE_FORM_URL` is already set to the form you provided. To swap forms later: open the new form → **Send** → the `<>` embed tab → copy the `src="..."` URL (it must end in `?embedded=true`) → paste it in as this constant. `js/main.js` sets the registration `<iframe>`'s `src` from this value on load, and also derives the "open in a new tab" fallback link by stripping `?embedded=true` from it — no other file needs to change.
+- `APPS_SCRIPT_URL` must be set before the registration form can submit — see [`apps-script/README.md`](apps-script/README.md) for how to deploy the backend and get this URL.
+- `FORM_OPTIONS.departments`, `FORM_OPTIONS.academicYears`, and `FORM_OPTIONS.mentors` are placeholders/empty — replace with the real lists before launch (mentors especially, since it starts empty). The rest of `FORM_OPTIONS` (CGPA ranges, interests, goals, meeting preferences) is filled in already.
 - `SOCIAL` links are placeholders — replace with real accounts, or remove the footer icons if not ready.
 
 ## Local preview
@@ -65,4 +69,4 @@ Mobile-first CSS (base styles target ~360px, scaling up via `min-width` breakpoi
 
 ## Content notes
 
-Copy is drawn directly from the confirmed program brief (highlights, gains, how-it-works steps, FAQ answers, contact details). Nothing was invented; the only editable placeholders are the social links in `js/config.js`.
+Copy is drawn directly from the confirmed program brief (highlights, gains, how-it-works steps, FAQ answers, contact details). Nothing was invented; the editable placeholders are the social links, form option lists (departments/academic years/mentors), and `APPS_SCRIPT_URL` in `js/config.js`.
