@@ -5,7 +5,7 @@
 const SITE_CONFIG = {
   // Apps Script Web App URL that the registration form POSTs to (js/form.js reads this directly).
   // TODO: deploy apps-script/Code.gs as a Web App and paste its /exec URL here before launch.
-  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwXvx20wlhrRqfIy1LGDnXWs93seLLiIM9zwoDSd1_H8RiPgSbimT8d5Ue9OMIZN1Gu/exec",
+  APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxZBSX5h47vxWQ7XJjrEhWbt_jW8tdw5ljJMjX3ZH9f63FY_w4L5b48DO12DcePme-u/exec",
 
   // Maximum accepted CV file size, in megabytes. Keep in sync with MAX_CV_BYTES in apps-script/Code.gs.
   MAX_CV_SIZE_MB: 5,

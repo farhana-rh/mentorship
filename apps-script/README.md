@@ -45,6 +45,19 @@ If you edit `Code.gs` after the first deploy, you must create a **new deployment
 ## Notes
 
 - The sheet header row and column order are created automatically on first submission, from the `HEADERS` array in `Code.gs`.
-- `MAX_CV_BYTES` in `Code.gs` should stay in sync with `MAX_CV_SIZE_MB` in `js/config.js` — one is enforced client-side, the other server-side.
+- `MAX_CV_BYTES` in `Code.gs` should stay in sync with `MAX_CV_SIZE_MB` in `js/config.js` — one is enforced client-side, the other server-side; the server independently re-checks the actual decoded file size and rejects anything that isn't a real PDF, since the client-reported values can't be trusted (anyone can POST to this URL directly, bypassing the site).
 - Every submission is written as a new row; nothing is ever overwritten or deleted by the script.
-- A `LockService` lock serializes concurrent submissions so simultaneous registrations can't collide when appending rows.
+- A `LockService` lock serializes concurrent submissions so simultaneous registrations can't collide when appending rows; if the lock can't be acquired within 30s, the submission is rejected with a "server is busy" message rather than failing silently.
+- Duplicate registrations (same NSU ID or NSU email as an existing row) are rejected server-side.
+- Free-text fields are sanitized before being written to the Sheet to prevent spreadsheet formula injection (a value starting with `=`, `+`, `-`, or `@`).
+- The registration form includes a hidden honeypot field (`website`) that real applicants never see or fill in. If it's non-empty, the script reports success without saving anything — this quietly discards most bot/spam submissions.
+
+## Updating the deployed script
+
+Whenever `Code.gs` changes (including the fixes above), you must push the update to your live Apps Script project and redeploy:
+
+1. Open your project at [script.google.com](https://script.google.com).
+2. Replace the file contents with the latest `apps-script/Code.gs`, keeping your own `SPREADSHEET_ID` and `CV_FOLDER_ID` values.
+3. **Deploy → Manage deployments → edit (pencil) → Version: New version → Deploy.**
+
+Saving alone does not update the live `/exec` URL's behavior — only a new deployment version does.
