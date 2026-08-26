@@ -582,14 +582,6 @@ button:focus-visible,
   text-align: left;
 }
 
-.hp-field {
-  position: absolute;
-  left: -9999px;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-}
-
 .form-section {
   border: var(--outline) solid var(--ink);
   border-radius: var(--r-md);

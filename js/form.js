@@ -180,7 +180,6 @@
     readCvAsBase64()
       .then(function (cv) {
         var payload = {
-          website: form.website.value.trim(), // honeypot — real applicants leave this blank
           fullName: form.fullName.value.trim(),
           nsuId: form.nsuId.value.trim(),
           nsuEmail: form.nsuEmail.value.trim(),

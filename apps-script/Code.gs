@@ -36,12 +36,6 @@ function doPost(e) {
 
     var data = JSON.parse(e.postData.contents);
 
-    // Honeypot: a hidden field real applicants never fill in. If it's populated, silently
-    // report success without writing anything, so bots don't learn to adapt.
-    if (data.website) {
-      return jsonResponse({ status: 'ok' });
-    }
-
     var missing = findMissingFields(data);
     if (missing.length) {
       return jsonResponse({ status: 'error', message: 'Missing required fields: ' + missing.join(', ') });

@@ -50,7 +50,6 @@ If you edit `Code.gs` after the first deploy, you must create a **new deployment
 - A `LockService` lock serializes concurrent submissions so simultaneous registrations can't collide when appending rows; if the lock can't be acquired within 30s, the submission is rejected with a "server is busy" message rather than failing silently.
 - Duplicate registrations (same NSU ID or NSU email as an existing row) are rejected server-side.
 - Free-text fields are sanitized before being written to the Sheet to prevent spreadsheet formula injection (a value starting with `=`, `+`, `-`, or `@`).
-- The registration form includes a hidden honeypot field (`website`) that real applicants never see or fill in. If it's non-empty, the script reports success without saving anything — this quietly discards most bot/spam submissions.
 
 ## Updating the deployed script
 
