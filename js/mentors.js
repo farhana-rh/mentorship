@@ -4,6 +4,8 @@
   var grid = document.getElementById("mentorGrid");
   if (!grid) return;
 
+  var MAX_PILLS = 3;
+
   function el(tag, props) {
     var node = document.createElement(tag);
     if (props) Object.keys(props).forEach(function (key) { node[key] = props[key]; });
@@ -21,40 +23,81 @@
     return (first + last).toUpperCase();
   }
 
+  // Shared with js/mentor-detail.js — must stay identical so links generated here resolve there.
+  function slugify(name) {
+    return name
+      .toLowerCase()
+      .replace(/[.,]/g, "")
+      .trim()
+      .replace(/\s+/g, "-");
+  }
+
+  // Card shows a compact "Role · Company" line; the full title still lives on the profile page.
+  function cardTitle(title) {
+    return title.replace(/ at ([^·]*)$/, " · $1");
+  }
+
   (SITE_CONFIG.MENTORS || []).forEach(function (mentor, i) {
-    var card = el("article", { className: "mentor-card panel" });
+    var slug = slugify(mentor.name);
+    var card = el("a", {
+      className: "mentor-card",
+      href: "mentor.html?slug=" + encodeURIComponent(slug),
+    });
+    card.setAttribute("aria-label", "View " + mentor.name + "'s mentor profile");
     card.setAttribute("data-reveal", "");
     card.style.setProperty("--reveal-delay", (i % 4) * 60 + "ms");
 
-    var portrait = el("div", { className: "mentor-portrait" });
+    var identity = el("div", { className: "mentor-card-identity" });
+
+    var avatar = el("div", { className: "mentor-card-avatar" });
     if (mentor.photo) {
-      portrait.appendChild(el("img", { src: mentor.photo, alt: mentor.name, loading: "lazy" }));
+      avatar.appendChild(el("img", { src: mentor.photo, alt: mentor.name, loading: "lazy" }));
     } else {
-      var placeholder = el("div", { className: "mentor-portrait--placeholder", textContent: initials(mentor.name) });
-      portrait.appendChild(placeholder);
+      avatar.appendChild(el("div", { className: "mentor-card-avatar--placeholder", textContent: initials(mentor.name) }));
     }
-    card.appendChild(portrait);
+    identity.appendChild(avatar);
 
-    card.appendChild(el("h3", { textContent: mentor.name }));
-
+    var info = el("div", { className: "mentor-card-info" });
+    info.appendChild(el("h3", { className: "mentor-card-name", textContent: mentor.name }));
     if (mentor.title) {
-      card.appendChild(el("p", { className: "mentor-title", textContent: mentor.title }));
+      info.appendChild(el("p", { className: "mentor-card-role", textContent: cardTitle(mentor.title) }));
     }
+    identity.appendChild(info);
 
-    if (mentor.education) {
-      card.appendChild(el("p", { className: "mentor-education", textContent: mentor.education }));
-    }
+    var chevron = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    chevron.setAttribute("class", "mentor-card-go");
+    chevron.setAttribute("viewBox", "0 0 24 24");
+    chevron.setAttribute("fill", "none");
+    chevron.setAttribute("stroke", "currentColor");
+    chevron.setAttribute("stroke-width", "2.6");
+    chevron.setAttribute("stroke-linecap", "round");
+    chevron.setAttribute("stroke-linejoin", "round");
+    chevron.setAttribute("aria-hidden", "true");
+    var chevronPath = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+    chevronPath.setAttribute("points", "9 6 15 12 9 18");
+    chevron.appendChild(chevronPath);
+    identity.appendChild(chevron);
 
-    if (mentor.bio) {
-      card.appendChild(el("p", { className: "mentor-bio", textContent: mentor.bio }));
-    }
+    card.appendChild(identity);
 
     if (mentor.tags && mentor.tags.length) {
-      var tagWrap = el("div", { className: "mentor-tags" });
-      mentor.tags.forEach(function (tag) {
-        tagWrap.appendChild(el("span", { className: "tag", textContent: tag }));
+      card.appendChild(el("hr", { className: "mentor-card-divider" }));
+
+      var areas = el("div", { className: "mentor-card-areas" });
+      areas.appendChild(el("p", { className: "mentor-card-areas-label", textContent: "Mentors in" }));
+
+      var pillWrap = el("div", { className: "mentor-card-pills" });
+      var tags = mentor.tags;
+      var shown = tags.length > MAX_PILLS ? tags.slice(0, MAX_PILLS - 1) : tags;
+      shown.forEach(function (tag) {
+        pillWrap.appendChild(el("span", { className: "mentor-pill", textContent: tag }));
       });
-      card.appendChild(tagWrap);
+      if (tags.length > MAX_PILLS) {
+        var remaining = tags.length - shown.length;
+        pillWrap.appendChild(el("span", { className: "mentor-pill mentor-pill--more", textContent: "+" + remaining + " more" }));
+      }
+      areas.appendChild(pillWrap);
+      card.appendChild(areas);
     }
 
     grid.appendChild(card);

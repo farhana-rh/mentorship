@@ -39,7 +39,7 @@
   }
 
   populateSelect("department", OPTIONS.departments, "Select your department");
-  populateSelect("academicYear", OPTIONS.academicYears, "Select your year / semester");
+  populateSelect("academicYear", OPTIONS.academicYears, "Select your year");
   populateSelect("cgpaRange", OPTIONS.cgpaRanges, "Select your CGPA range");
 
   var mentorNames = (SITE_CONFIG.MENTORS || []).map(function (m) { return m.name; });
@@ -96,21 +96,17 @@
   var cvError = document.getElementById("cvFileError");
   var MAX_CV_BYTES = (SITE_CONFIG.MAX_CV_SIZE_MB || 5) * 1024 * 1024;
 
-  function readCvAsBase64() {
+  function fileProblem(file) {
+    if (!file) return "Please attach your CV.";
+    if (file.type !== "application/pdf") return "Please upload your CV as a PDF file.";
+    if (file.size > MAX_CV_BYTES) {
+      return "Your CV must be smaller than " + (SITE_CONFIG.MAX_CV_SIZE_MB || 5) + " MB.";
+    }
+    return "";
+  }
+
+  function encodeCv(file) {
     return new Promise(function (resolve, reject) {
-      var file = cvInput && cvInput.files && cvInput.files[0];
-      if (!file) {
-        reject(new Error("Please attach your CV."));
-        return;
-      }
-      if (file.type !== "application/pdf") {
-        reject(new Error("Please upload your CV as a PDF file."));
-        return;
-      }
-      if (file.size > MAX_CV_BYTES) {
-        reject(new Error("Your CV must be smaller than " + (SITE_CONFIG.MAX_CV_SIZE_MB || 5) + " MB."));
-        return;
-      }
       var reader = new FileReader();
       reader.onload = function () {
         resolve({
@@ -123,6 +119,37 @@
       reader.onerror = function () { reject(new Error("Could not read the selected file.")); };
       reader.readAsDataURL(file);
     });
+  }
+
+  // Encode as soon as the file is picked, so submitting doesn't wait on FileReader.
+  var cvCache = null;
+  if (cvInput) {
+    cvInput.addEventListener("change", function () {
+      cvCache = null;
+      if (cvError) {
+        cvError.textContent = "";
+        cvError.classList.add("is-hidden");
+      }
+      var file = cvInput.files && cvInput.files[0];
+      if (!file) return;
+      var problem = fileProblem(file);
+      if (problem) {
+        if (cvError) {
+          cvError.textContent = problem;
+          cvError.classList.remove("is-hidden");
+        }
+        return;
+      }
+      cvCache = { file: file, promise: encodeCv(file) };
+    });
+  }
+
+  function readCvAsBase64() {
+    var file = cvInput && cvInput.files && cvInput.files[0];
+    var problem = fileProblem(file);
+    if (problem) return Promise.reject(new Error(problem));
+    if (cvCache && cvCache.file === file) return cvCache.promise;
+    return encodeCv(file);
   }
 
   /* ---------- Collect + submit ---------- */

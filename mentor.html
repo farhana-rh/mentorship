@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Meet the Mentors — INSB WIE Mentorship Program</title>
-<meta name="description" content="Meet the mentors of the INSB WIE Mentorship Program, Cohort 1 | 2026 — a mentorship initiative by the IEEE NSU SB WIE Affinity Group for female undergraduate students at NSU." />
+<title id="pageTitle">Mentor Profile — INSB WIE Mentorship Program</title>
+<meta id="pageDescription" name="description" content="Mentor profile — INSB WIE Mentorship Program, Cohort 1 | 2026." />
 
 <link rel="icon" type="image/png" href="assets/images/favicon/favicon-96x96.png" sizes="96x96" />
 <link rel="shortcut icon" href="assets/images/favicon/favicon.ico" />
@@ -33,6 +33,7 @@
       </div>
     </a>
     <div class="header-actions">
+      <a href="mentors.html" class="btn btn-ghost header-cta">Mentors</a>
       <a href="index.html#register" class="btn btn-primary header-cta">Register</a>
     </div>
   </div>
@@ -40,25 +41,23 @@
 
 <main id="main">
 
-  <!-- ============ MENTORS HERO ============ -->
-  <section class="section mentors-hero">
+  <!-- ============ MENTOR DETAIL ============ -->
+  <section class="section">
     <svg class="deco deco--slow" style="top:8%; left:6%; width:22px; --rot:-8deg;" viewBox="0 0 24 24" aria-hidden="true"><path fill="#ffd966" stroke="#1a1425" stroke-width="1.4" stroke-linejoin="round" d="M12 1l2.6 8.4L23 12l-8.4 2.6L12 23l-2.6-8.4L1 12l8.4-2.6L12 1z"/></svg>
     <svg class="deco deco--fast" style="top:14%; right:7%; width:18px; --rot:10deg;" viewBox="0 0 24 24" aria-hidden="true"><path fill="#ff9fc0" stroke="#1a1425" stroke-width="1.4" stroke-linejoin="round" d="M12 1l2.6 8.4L23 12l-8.4 2.6L12 23l-2.6-8.4L1 12l8.4-2.6L12 1z"/></svg>
 
-    <div class="container">
-      <div class="section-head" data-reveal>
-        <span class="eyebrow">Cohort 1 | 2026</span>
-        <h1>Meet the Mentors</h1>
-        <p class="section-sub">The professionals and alumni guiding this cohort</p>
-        <p class="lede">Browse mentor backgrounds and focus areas below, then head back to the <a href="index.html#register">registration form</a> to rank your preferred mentors.</p>
-      </div>
-    </div>
-  </section>
+    <div class="mentor-profile">
+      <a href="mentors.html" class="mentor-detail-back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        Back to all mentors
+      </a>
 
-  <!-- ============ MENTOR GRID ============ -->
-  <section class="section" style="padding-top:0;">
-    <div class="container">
-      <div class="mentor-grid" id="mentorGrid"></div>
+      <div id="mentorDetailContent"></div>
+
+      <div id="mentorNotFound" class="mentor-not-found is-hidden">
+        <h1>Mentor not found</h1>
+        <p class="lede">We couldn't find that mentor profile. <a href="mentors.html">Browse all mentors</a> instead.</p>
+      </div>
     </div>
   </section>
 
@@ -110,7 +109,7 @@
 </footer>
 
 <script src="js/config.js"></script>
-<script src="js/mentors.js"></script>
+<script src="js/mentor-detail.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

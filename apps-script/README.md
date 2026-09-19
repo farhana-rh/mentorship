@@ -12,6 +12,8 @@ Create a new Google Sheet (or reuse an existing one) to collect responses. Copy 
 Create a Drive folder that uploaded CVs will be saved into. Copy its ID from the URL:
 `https://drive.google.com/drive/folders/`**`THIS_PART`**
 
+Uploaded CVs are **not** made link-shareable — they contain applicants' personal data, and setting per-file sharing also costs an extra Drive call on every submission. Instead, share this one folder (Drive → right-click the folder → Share) with the committee members who need to read CVs. Anyone with folder access can open the CV links in the Sheet; anyone else will see a "request access" page.
+
 ## 3. Create the Apps Script project
 
 1. Go to [script.google.com](https://script.google.com) → **New project**.
@@ -50,6 +52,9 @@ If you edit `Code.gs` after the first deploy, you must create a **new deployment
 - A `LockService` lock serializes concurrent submissions so simultaneous registrations can't collide when appending rows; if the lock can't be acquired within 30s, the submission is rejected with a "server is busy" message rather than failing silently.
 - Duplicate registrations (same NSU ID or NSU email as an existing row) are rejected server-side.
 - Free-text fields are sanitized before being written to the Sheet to prevent spreadsheet formula injection (a value starting with `=`, `+`, `-`, or `@`).
+- After a successful registration, a confirmation email is sent to the applicant's NSU email from the Google account running the script, with `CONTACT_EMAIL` (top of `Code.gs`) set as the reply-to address. If sending fails (e.g. daily quota reached), the registration still succeeds — only the email is skipped.
+- **Email sending quota**: `MailApp` on a personal Gmail account allows roughly 100 emails/day. That's plenty for organic registration traffic spread over days/weeks, but if 100+ people register in a single day, later applicants that day won't get a confirmation email (their registration is still saved normally).
+- Adding `MailApp.sendEmail(...)` means the script now needs Gmail permission too — the **next deployment** will prompt you to re-authorize the script with an added scope.
 
 ## Updating the deployed script
 

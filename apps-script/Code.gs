@@ -8,6 +8,8 @@ var SPREADSHEET_ID = 'PASTE_YOUR_GOOGLE_SHEET_ID_HERE';
 var SHEET_NAME = 'Registrations';
 var CV_FOLDER_ID = 'PASTE_YOUR_DRIVE_FOLDER_ID_HERE';
 var MAX_CV_BYTES = 5 * 1024 * 1024; // keep in sync with MAX_CV_SIZE_MB in js/config.js
+var CONTACT_EMAIL = 'ieeewie.nsu@gmail.com'; // keep in sync with CONTACT_EMAIL in js/config.js
+var PROGRAM_NAME = 'INSB WIE Mentorship Program (Cohort 1 | 2026)';
 
 var HEADERS = [
   'Timestamp', 'Full Name', 'NSU ID', 'NSU Email', 'Department', 'Academic Year',
@@ -72,6 +74,8 @@ function doPost(e) {
       cvLink,
     ]);
 
+    sendConfirmationEmail(data);
+
     return jsonResponse({ status: 'ok' });
   } catch (err) {
     return jsonResponse({ status: 'error', message: err.message });
@@ -117,9 +121,32 @@ function saveCvToDrive(cv, fullName) {
   }
   var folder = DriveApp.getFolderById(CV_FOLDER_ID);
   var blob = Utilities.newBlob(decoded, 'application/pdf', (fullName || 'applicant') + ' - CV.pdf');
-  var file = folder.createFile(blob);
-  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-  return file.getUrl();
+  // No setSharing() call: it costs an extra Drive round-trip on every submission, and CVs
+  // contain personal data that shouldn't be readable by anyone with the link. Share the CV
+  // folder itself with the committee once instead — see apps-script/README.md.
+  return folder.createFile(blob).getUrl();
+}
+
+function sendConfirmationEmail(data) {
+  try {
+    var subject = "We've received your " + PROGRAM_NAME + " application";
+    var body =
+      'Hi ' + data.fullName + ',\n\n' +
+      "Thanks for applying to the " + PROGRAM_NAME + ". We've received your application, and it's now with the organizing committee for review.\n\n" +
+      "We'll follow up by email once mentor-mentee matching is complete. If you have any questions in the meantime, reach out to " + CONTACT_EMAIL + ".\n\n" +
+      'Thanks,\n' +
+      'IEEE NSU SB WIE Affinity Group';
+
+    MailApp.sendEmail({
+      to: data.nsuEmail,
+      replyTo: CONTACT_EMAIL,
+      subject: subject,
+      body: body,
+    });
+  } catch (err) {
+    // Swallow errors (e.g. daily email quota reached) — the registration itself already
+    // succeeded and shouldn't be reported as failed just because the confirmation email didn't send.
+  }
 }
 
 function getSheet() {
