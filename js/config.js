@@ -36,12 +36,11 @@ const SITE_CONFIG = {
       "Artificial Intelligence / Machine Learning",
       "Data Science",
       "Cybersecurity",
-      "Networking",
-      "Cloud Computing / DevOps",
       "Embedded Systems / IoT",
       "Research & Academia",
       "Product / Project Management",
       "Entrepreneurship",
+      "Seminconductor / VLSI",
       "Other",
     ],
 
@@ -104,6 +103,16 @@ const SITE_CONFIG = {
       photo: "assets/images/mentors/achia-nila.png",
     },
     {
+      name: "Tanzeem Haque",
+      title: "Data Infrastructure & Services Lead, ACI AI Business at ACI Limited · Part-time Faculty Lecturer at American International University - Bangladesh (AIUB)",
+      education: [
+        { degree: "Bachelors & Masters in Bioinformatics (joint degree)", institution: "Ludwig-Maximilian University of Munich & Technical University of Munich" },
+      ],
+      bio: "Tanzeem Haque works in ACI PLC's AI division, where she leads initiatives across data infrastructure, data science, analytics, and engineering. She also serves as Director at DataEins, working on data systems for the healthcare sector.\n\nShe has mentored students at the Technical University of Munich since 2023 and previously worked as a Data Engineer at Smartify IT Solutions GmbH and Significo Health in Germany.\n\nHer experience spans data engineering, data science, analytics, and technology-driven healthcare solutions.",
+      tags: ["Data Engineering", "Data Science", "Data Analytics"],
+      photo: "assets/images/mentors/tanzeem-haque.png",
+    },
+    {
       name: "Afra Kabir",
       title: "Senior Staff Engineer | Software Engineering - Digital | IT at Grameenphone Ltd",
       education: [
@@ -115,14 +124,14 @@ const SITE_CONFIG = {
       photo: "assets/images/mentors/afra-kabir.jpg",
     },
     {
-      name: "Tanzeem Haque",
-      title: "Data Infrastructure & Services Lead, ACI AI Business at ACI Limited · Part-time Faculty Lecturer at American International University - Bangladesh (AIUB)",
+      name: "Dr. Fariah Mahzabeen, Ph.D.",
+      title: "Associate Professor, Electrical and Computer Engineering Department at North South University",
       education: [
-        { degree: "Bachelors & Masters in Bioinformatics (joint degree)", institution: "Ludwig-Maximilian University of Munich & Technical University of Munich" },
+        { degree: "Ph.D. in Electrical Engineering", institution: "Stanford University" },
       ],
-      bio: "Tanzeem Haque works in ACI PLC's AI division, where she leads initiatives across data infrastructure, data science, analytics, and engineering. She also serves as Director at DataEins, working on data systems for the healthcare sector.\n\nShe has mentored students at the Technical University of Munich since 2023 and previously worked as a Data Engineer at Smartify IT Solutions GmbH and Significo Health in Germany.\n\nHer experience spans data engineering, data science, analytics, and technology-driven healthcare solutions.",
-      tags: ["Data Engineering", "Data Science", "Data Analytics"],
-      photo: "assets/images/mentors/tanzeem-haque.png",
+      bio: "Dr. Fariah Mahzabeen is an Associate Professor of Electrical and Computer Engineering at North South University and a Ph.D. graduate in Electrical Engineering from Stanford University.\n\nShe previously served as an Assistant Professor at San Jose State University and a Technical Program Manager at Google Cloud. She has also worked with Verily Life Sciences, Facebook, and Stanford University, gaining expertise in engineering, research, and technology innovation.\n\nAs a Co-Founder and COO of Tackle, she also brings valuable entrepreneurial and leadership experience.",
+      tags: ["Digital Health / Interdisciplinary Research", "Graduate Studies in Top Schools", "Aiming to Work at MAANG Companies", "Entrepreneurial Stint", "Mental Health Support During Education"],
+      photo: "assets/images/mentors/fariah-mahzabeen.jpg",
     },
     {
       name: "Zarrin Tasnim",
@@ -146,16 +155,7 @@ const SITE_CONFIG = {
       tags: ["Higher Study", "Research in Semiconductor"],
       photo: "assets/images/mentors/tahmina-akhter.png",
     },
-    {
-      name: "Dr. Fariah Mahzabeen, Ph.D.",
-      title: "Associate Professor, Electrical and Computer Engineering Department at North South University",
-      education: [
-        { degree: "Ph.D. in Electrical Engineering", institution: "Stanford University" },
-      ],
-      bio: "Dr. Fariah Mahzabeen is an Associate Professor of Electrical and Computer Engineering at North South University and a Ph.D. graduate in Electrical Engineering from Stanford University.\n\nShe previously served as an Assistant Professor at San Jose State University and a Technical Program Manager at Google Cloud. She has also worked with Verily Life Sciences, Facebook, and Stanford University, gaining expertise in engineering, research, and technology innovation.\n\nAs a Co-Founder and COO of Tackle, she also brings valuable entrepreneurial and leadership experience.",
-      tags: ["Digital Health / Interdisciplinary Research", "Graduate Studies in Top Schools", "Aiming to Work at MAANG Companies", "Entrepreneurial Stint", "Mental Health Support During Education"],
-      photo: "assets/images/mentors/fariah-mahzabeen.jpg",
-    },
+    
     {
       name: "Tasmia Tabassum Rahman",
       title: "Assistant Engineering Program Manager at Ulkasemi",
@@ -189,8 +189,8 @@ const SITE_CONFIG = {
 
   // TODO: REPLACE with real social links before launch.
   SOCIAL: {
-    facebook: "https://www.facebook.com/ieeensusbwie",
-    instagram: "https://www.instagram.com/ieeensusbwie",
-    linkedin: "https://www.linkedin.com/company/ieee-nsu-sb-wie",
+    facebook: "https://www.facebook.com/ieeewiensu",
+    instagram: "https://www.instagram.com/ieeensuwie/",
+    linkedin: "https://www.linkedin.com/company/ieee-nsu-sb-wie-affinity-group/",
   },
 };
