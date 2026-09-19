@@ -178,6 +178,44 @@ const SITE_CONFIG = {
       tags: ["Research", "Graduate Applications", "M.S. Studies in Robotics"],
       photo: "assets/images/mentors/fardifa-fathmiul-alam.jpg",
     },
+    {
+      name: "Kimia Tuz Zaman, Ph.D.",
+      title: "Assistant Professor, Department of Computer Science at Tuskegee University",
+      education: [
+        { degree: "Ph.D. in Computer Science", institution: "North Dakota State University (NDSU)" },
+        { degree: "B.Sc. in Computer Science & Engineering", institution: "North South University" },
+      ],
+      bio: "Dr. Kimia Tuz Zaman is an Assistant Professor in the Department of Computer Science at Tuskegee University. Her research lies at the intersection of Artificial Intelligence, Human-Computer Interaction (HCI), healthcare, privacy, and inclusive technology design.\n\nHer work focuses on developing intelligent, responsible, and culturally sensitive technologies that address the needs of diverse and underserved communities. As an educator and researcher, she is passionate about empowering students and using computing to create meaningful real-world impact.",
+      // TODO: the "Mentorship area:" heading is blank in Mentorship Program Speaker Details.pdf —
+      // ask Kimia for her areas. Until then her card and profile show no "Mentors in" section.
+      tags: [],
+      photo: "assets/images/mentors/kimia-tuz-zaman.jpg",
+    },
+    {
+      name: "Oishi Maniha",
+      title: "Technical Manager at Ulkasemi Limited",
+      education: [
+        { degree: "B.App.Sc. in Electrical and Electronics Engineering", institution: "North South University" },
+      ],
+      experience: "8.5+ years",
+      bio: "Oishi Maniha is a Technical Manager at Ulkasemi Limited with over 8.5 years of experience in Analog and Mixed-Signal Layout Engineering and VLSI physical design. She specializes in gate-level netlist-to-GDSII design flow, advanced-node physical layout, IP integration, and full-chip implementation, with hands-on experience across TSMC, GlobalFoundries, and Samsung technologies ranging from 180nm to 3nm.\n\nAlongside her technical expertise, she also works closely with international clients and cross-functional teams, providing technical guidance, resolving complex design challenges, and ensuring successful project execution.",
+      // TODO: the "Mentorship area:" heading is blank in Mentorship Program Speaker Details.pdf.
+      tags: [],
+      // TODO: no photo supplied — an initials avatar is shown until one is added.
+      photo: "",
+    },
+    {
+      name: "Mayeesha F. Ahmad",
+      title: "Team Lead at Neural Semiconductor Limited",
+      education: [
+        { degree: "B.Sc. in Electrical and Electronics Engineering", institution: "East Delta University" },
+      ],
+      experience: "5+ years",
+      bio: "Mayeesha F. Ahmad is a Team Lead at Neural Semiconductor Limited with over 5 years of experience in Analog and Mixed-Signal (AMS) Layout Engineering. She specializes in advanced-node technologies ranging from 180nm to 5nm and has experience working with leading foundries including GlobalFoundries, TSMC, and UMC.\n\nHer expertise includes AMS layout, BCD, GaN, High Voltage, FDSOI, FinFET, and Planar technologies, using industry-standard tools such as Cadence Virtuoso and Synopsys Custom Compiler. As a Team Lead, she drives engineering excellence and collaboration within her AMS Design team.\n\nPassionate about STEM and innovation, she is committed to continuous growth and contributing to the advancement of Bangladesh's semiconductor industry.",
+      tags: ["Analog and Mixed-Signal (AMS) Layout Engineering", "VLSI and Semiconductor Design", "Advanced-Node Technologies", "STEM and Semiconductor Industry"],
+      // TODO: no photo supplied — an initials avatar is shown until one is added.
+      photo: "",
+    },
   ],
 
   PROGRAM_NAME: "INSB WIE Mentorship Program",
