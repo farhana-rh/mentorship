@@ -377,12 +377,10 @@
               <span class="btn-label">Submit Application</span>
             </button>
             <div class="form-progress is-hidden" id="formProgress">
-              <div class="form-progress-track" id="formProgressBar" role="progressbar"
-                   aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"
-                   aria-labelledby="formProgressLabel">
-                <div class="form-progress-fill" id="formProgressFill"></div>
-              </div>
-              <p class="form-progress-label" id="formProgressLabel">Uploading your application…</p>
+              <!-- Indeterminate by design: a percentage is not obtainable here. See the
+                   "Submit progress" comment in js/form.js before changing this. -->
+              <div class="form-progress-track" role="progressbar" aria-labelledby="formProgressLabel"></div>
+              <p class="form-progress-label" id="formProgressLabel">Sending your application…</p>
             </div>
             <p class="form-status" id="formStatus" role="status" aria-live="polite"></p>
           </div>

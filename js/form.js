@@ -177,71 +177,52 @@
     statusEl.className = "form-status" + (kind ? " is-" + kind : "");
   }
 
-  /* ---------- Submit progress ---------- */
+  /* ---------- Submit progress ----------
+   *
+   * This bar is deliberately INDETERMINATE — it never shows a percentage, because a
+   * percentage is impossible here. Real upload progress needs XMLHttpRequest's
+   * xhr.upload events, and per the Fetch spec, registering any xhr.upload listener sets
+   * the request's "upload listener flag", which disqualifies it from being a CORS simple
+   * request and forces an OPTIONS preflight. Apps Script Web Apps have no doOptions
+   * handler and cannot answer a preflight, so the request fails outright. Do not
+   * reintroduce xhr.upload here — it breaks submission entirely.
+   *
+   * What the bar can honestly show is that work is still happening, plus elapsed time,
+   * which is what stops applicants assuming the form has frozen and submitting twice.
+   */
   var progressEl = document.getElementById("formProgress");
-  var progressBar = document.getElementById("formProgressBar");
-  var progressFill = document.getElementById("formProgressFill");
   var progressLabel = document.getElementById("formProgressLabel");
+  var progressTimer = null;
 
-  function setProgress(percent) {
-    var pct = Math.max(0, Math.min(100, Math.round(percent)));
-    if (progressFill) progressFill.style.width = pct + "%";
-    if (progressBar) progressBar.setAttribute("aria-valuenow", String(pct));
+  // Escalating reassurance: on a slow mobile connection a 2MB CV can take 20s+, and
+  // silence past the 10s mark is when people start hitting the button again.
+  function progressMessage(seconds) {
+    if (seconds < 10) return "Sending your application…";
+    if (seconds < 25) return "Still sending — large CVs take a while on slow connections…";
+    return "Still working — please don't close this page or submit again…";
   }
 
   function showProgress() {
     if (!progressEl) return;
-    progressEl.classList.remove("is-hidden");
-    progressEl.classList.remove("is-processing");
-    if (progressBar) progressBar.removeAttribute("aria-valuetext");
-    if (progressLabel) progressLabel.textContent = "Uploading your application…";
-    setProgress(0);
-  }
+    var startedAt = Date.now();
 
-  // The bytes are all sent but the server is still writing to Drive and the Sheet, which
-  // takes several seconds. There's no way to measure that, so drop the percentage rather
-  // than park the bar at 100% — a full bar that doesn't move reads as a crash.
-  function showProcessing() {
-    if (!progressEl || progressEl.classList.contains("is-processing")) return;
-    progressEl.classList.add("is-processing");
-    if (progressBar) {
-      progressBar.removeAttribute("aria-valuenow");
-      progressBar.setAttribute("aria-valuetext", "Saving your application, please wait");
+    function tick() {
+      var seconds = Math.floor((Date.now() - startedAt) / 1000);
+      if (progressLabel) {
+        progressLabel.textContent = progressMessage(seconds) + " (" + seconds + "s)";
+      }
     }
-    if (progressLabel) progressLabel.textContent = "Saving your application — almost done…";
+
+    progressEl.classList.remove("is-hidden");
+    tick();
+    clearInterval(progressTimer);
+    progressTimer = setInterval(tick, 1000);
   }
 
   function hideProgress() {
-    if (!progressEl) return;
-    progressEl.classList.add("is-hidden");
-    progressEl.classList.remove("is-processing");
-    if (progressBar) progressBar.removeAttribute("aria-valuetext");
-    setProgress(0);
-  }
-
-  // XMLHttpRequest rather than fetch: fetch exposes no upload progress events, and the CV
-  // is the overwhelming majority of the request body. Resolves with the response text so
-  // the caller handles the response exactly as it did before.
-  function postWithProgress(url, body, onProgress) {
-    return new Promise(function (resolve, reject) {
-      var xhr = new XMLHttpRequest();
-      xhr.open("POST", url);
-      // No setRequestHeader("Content-Type", ...): a string body is sent as text/plain, which
-      // keeps this a "simple request" and avoids a CORS preflight that the Apps Script Web
-      // App can't answer. Setting the header explicitly would break the submission.
-      xhr.upload.addEventListener("progress", function (evt) {
-        if (evt.lengthComputable) onProgress((evt.loaded / evt.total) * 100);
-      });
-      xhr.upload.addEventListener("load", function () { onProgress(100); });
-      xhr.addEventListener("load", function () { resolve(xhr.responseText); });
-      xhr.addEventListener("error", function () {
-        reject(new Error("We couldn't reach the server. Check your connection and try again."));
-      });
-      xhr.addEventListener("timeout", function () {
-        reject(new Error("The submission timed out. Please check your connection and try again."));
-      });
-      xhr.send(body);
-    });
+    clearInterval(progressTimer);
+    progressTimer = null;
+    if (progressEl) progressEl.classList.add("is-hidden");
   }
 
   form.addEventListener("submit", function (evt) {
@@ -297,15 +278,14 @@
           cv: cv,
         };
 
-        return postWithProgress(
-          SITE_CONFIG.APPS_SCRIPT_URL,
-          JSON.stringify(payload),
-          function (percent) {
-            setProgress(percent);
-            if (percent >= 100) showProcessing();
-          }
-        );
+        // Plain-string body keeps this a "simple request" (no custom Content-Type),
+        // which avoids a CORS preflight that the Apps Script Web App can't answer.
+        return fetch(SITE_CONFIG.APPS_SCRIPT_URL, {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
       })
+      .then(function (res) { return res.text(); })
       .then(function (text) {
         var data;
         try {

@@ -750,26 +750,16 @@ button:focus-visible,
    movement applicants assume the form has frozen and submit again. */
 .form-progress { margin-top: 16px; }
 
+/* Always indeterminate — a real percentage isn't obtainable against an Apps Script Web App
+   (see the "Submit progress" comment in js/form.js). A moving barber-pole says "still
+   working" without claiming to know how far along it is. */
 .form-progress-track {
   height: 20px;
   background: var(--white);
   border: var(--outline) solid var(--ink);
   border-radius: var(--r-sm);
   overflow: hidden;
-}
-
-.form-progress-fill {
-  height: 100%;
-  width: 0;
-  background: var(--purple);
-  transition: width 200ms linear;
-}
-
-/* The bytes are all sent, but Apps Script is still writing to Drive and the Sheet. A bar
-   parked at 100% reads as stalled, so switch to a moving barber-pole with no fixed end. */
-.form-progress.is-processing .form-progress-fill {
-  width: 100%;
-  background: repeating-linear-gradient(
+  background-image: repeating-linear-gradient(
     -45deg,
     var(--purple) 0 10px,
     var(--purple-deep) 10px 20px
@@ -780,6 +770,13 @@ button:focus-visible,
 
 @keyframes form-progress-stripes {
   to { background-position: 28px 0; }
+}
+
+/* With animation suppressed the stripes freeze, and a full, static bar reads as "finished"
+   — worse than showing nothing. Drop the bar and let the elapsed-time label do the work. */
+@media (prefers-reduced-motion: reduce) {
+  .form-progress-track { display: none; }
+  .form-progress-label { margin-top: 0; }
 }
 
 .form-progress-label {
