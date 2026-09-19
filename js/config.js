@@ -76,10 +76,6 @@ const SITE_CONFIG = {
     meetingTimes: ["Weekday morning", "Weekday afternoon", "Weekday evening", "Weekend", "Flexible"],
   },
 
-  // Shown in the "At a glance" panel on every mentor profile unless a mentor overrides it
-  // with their own `availability` field.
-  DEFAULT_AVAILABILITY: "Open to mentees",
-
   // Mentor profiles — shown on mentors.html and used to build the registration form's
   // mentor-choice dropdowns (js/form.js derives those from this list). Edit only here;
   // both pages update automatically.
@@ -88,7 +84,6 @@ const SITE_CONFIG = {
   // omitted when the field is missing, so it is safe to leave them out:
   //   experience   — e.g. "10+ years". Only filled in where the mentor's own bio states it.
   //   location     — TODO: not collected yet, so no mentor shows a Location row today.
-  //   availability — overrides DEFAULT_AVAILABILITY above.
   MENTORS: [
     {
       name: "Achia Nila",
@@ -223,8 +218,7 @@ const SITE_CONFIG = {
   COHORT_LABEL: "Cohort 1 | 2026",
 
   CONTACT_EMAIL: "ieeewie.nsu@gmail.com",
-  CONTACT_PHONES: ["+8801710097856", "+8801684382112"],
-
+  
   // TODO: REPLACE with real social links before launch.
   SOCIAL: {
     facebook: "https://www.facebook.com/ieeewiensu",

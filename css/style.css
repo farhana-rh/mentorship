@@ -865,10 +865,8 @@ button:focus-visible,
 .mentor-card-role {
   font-size: 0.78rem;
   font-weight: 500;
+  line-height: 1.45;
   color: var(--purple-deep);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   margin-top: 3px;
 }
 
@@ -1004,33 +1002,6 @@ button:focus-visible,
   text-overflow: ellipsis;
 }
 
-.mentor-hero-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 16px;
-}
-
-.mentor-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 600;
-  padding: 6px 14px;
-  border-radius: var(--r-sm);
-  transition: background-color 160ms var(--ease), border-color 160ms var(--ease), color 160ms var(--ease);
-}
-
-.mentor-btn--primary {
-  background: var(--purple);
-  color: var(--white);
-  border: 1px solid var(--purple);
-}
-
-.mentor-btn--primary:hover { background: var(--purple-deep); border-color: var(--purple-deep); }
-
 /* Two-column body */
 .mentor-body {
   display: grid;
@@ -1119,8 +1090,6 @@ button:focus-visible,
   color: var(--ink);
   text-align: right;
 }
-
-.mentor-glance-value--open { color: var(--success); }
 
 .mentor-not-found {
   text-align: center;

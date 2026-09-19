@@ -236,8 +236,20 @@
           body: JSON.stringify(payload),
         });
       })
-      .then(function (res) { return res.json(); })
-      .then(function (data) {
+      .then(function (res) { return res.text(); })
+      .then(function (text) {
+        var data;
+        try {
+          data = JSON.parse(text);
+        } catch (parseError) {
+          // The backend answered with something other than JSON (typically an Apps Script
+          // error page). The submission may still have been saved, so don't tell the
+          // applicant it failed outright and push them into submitting twice.
+          throw new Error(
+            "We couldn't confirm your submission. It may have gone through — please email " +
+            SITE_CONFIG.CONTACT_EMAIL + " to check before submitting again."
+          );
+        }
         if (data.status !== "ok") throw new Error(data.message || "Something went wrong. Please try again.");
         form.reset();
         document.querySelectorAll(".other-input").forEach(function (i) { i.classList.add("is-hidden"); });

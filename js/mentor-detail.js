@@ -70,13 +70,6 @@
     heroInfo.appendChild(el("p", { className: "mentor-hero-role", textContent: roleLine(mentor.title) }));
   }
 
-  var actions = el("div", { className: "mentor-hero-actions" });
-  actions.appendChild(el("a", {
-    className: "mentor-btn mentor-btn--primary",
-    href: "index.html#register",
-    textContent: "Request mentorship",
-  }));
-  heroInfo.appendChild(actions);
   hero.appendChild(heroInfo);
   content.appendChild(hero);
 
@@ -125,7 +118,6 @@
   var glanceRows = [
     { label: "Experience", value: mentor.experience },
     { label: "Location", value: mentor.location },
-    { label: "Availability", value: mentor.availability || SITE_CONFIG.DEFAULT_AVAILABILITY, isAvailability: true },
   ].filter(function (row) { return row.value; });
 
   if (glanceRows.length) {
@@ -135,10 +127,7 @@
     glanceRows.forEach(function (row) {
       var wrap = el("div", { className: "mentor-glance-row" });
       wrap.appendChild(el("dt", { className: "mentor-glance-label", textContent: row.label }));
-      wrap.appendChild(el("dd", {
-        className: "mentor-glance-value" + (row.isAvailability ? " mentor-glance-value--open" : ""),
-        textContent: row.value,
-      }));
+      wrap.appendChild(el("dd", { className: "mentor-glance-value", textContent: row.value }));
       list.appendChild(wrap);
     });
     glance.appendChild(list);
