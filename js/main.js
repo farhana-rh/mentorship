@@ -54,7 +54,10 @@
           }
         });
       },
-      { threshold: 0.12, rootMargin: "0px 0px -60px 0px" }
+      // threshold must stay 0: a percentage threshold is unreachable for elements taller
+      // than the viewport (the registration panel is ~5400px), which left them stuck at
+      // opacity 0. rootMargin alone provides the "scrolled into view a bit" delay.
+      { threshold: 0, rootMargin: "0px 0px -60px 0px" }
     );
     revealTargets.forEach(function (el) { revealObserver.observe(el); });
   }

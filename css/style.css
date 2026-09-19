@@ -127,6 +127,9 @@ button:focus-visible,
   position: relative;
 }
 
+/* Keeps the sticky header from covering the top of a section jumped to via #anchor. */
+[id] { scroll-margin-top: calc(var(--header-h) + 8px); }
+
 .section-head {
   text-align: center;
   max-width: 620px;
