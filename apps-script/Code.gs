@@ -7,7 +7,7 @@
 var SPREADSHEET_ID = 'PASTE_YOUR_GOOGLE_SHEET_ID_HERE';
 var SHEET_NAME = 'Registrations';
 var CV_FOLDER_ID = 'PASTE_YOUR_DRIVE_FOLDER_ID_HERE';
-var MAX_CV_BYTES = 5 * 1024 * 1024; // keep in sync with MAX_CV_SIZE_MB in js/config.js
+var MAX_CV_BYTES = 2 * 1024 * 1024; // keep in sync with MAX_CV_SIZE_MB in js/config.js
 var CONTACT_EMAIL = 'ieeewie.nsu@gmail.com'; // keep in sync with CONTACT_EMAIL in js/config.js
 var PROGRAM_NAME = 'INSB WIE Mentorship Program (Cohort 1 | 2026)';
 

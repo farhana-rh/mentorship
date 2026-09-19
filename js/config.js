@@ -8,7 +8,9 @@ const SITE_CONFIG = {
   APPS_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxZBSX5h47vxWQ7XJjrEhWbt_jW8tdw5ljJMjX3ZH9f63FY_w4L5b48DO12DcePme-u/exec",
 
   // Maximum accepted CV file size, in megabytes. Keep in sync with MAX_CV_BYTES in apps-script/Code.gs.
-  MAX_CV_SIZE_MB: 5,
+  // Kept low deliberately: the file is base64-encoded into the request (+33%), so this value
+  // is the main thing driving how long a submission takes on a slow upload connection.
+  MAX_CV_SIZE_MB: 2,
 
   // Options for the registration form's dropdowns and checkbox/radio groups.
   // Editing this object is the only thing needed to change what applicants see.
