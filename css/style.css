@@ -983,7 +983,10 @@ button:focus-visible,
   background: var(--purple-soft);
 }
 
-.mentor-hero-info { min-width: 0; }
+.mentor-hero-info {
+  min-width: 0;
+  width: 100%;
+}
 
 .mentor-hero-name {
   font-family: var(--font-body);
@@ -995,11 +998,9 @@ button:focus-visible,
 
 .mentor-hero-role {
   font-size: 14px;
+  line-height: 1.5;
   color: var(--text-body);
   margin-top: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /* Two-column body */
