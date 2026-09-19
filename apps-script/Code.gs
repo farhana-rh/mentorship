@@ -41,8 +41,10 @@ var EMAIL_RUN_BUDGET_MS = 4 * 60 * 1000; // Apps Script kills a trigger at ~6 mi
  * deferred to the sendPendingEmails trigger.
  */
 function doPost(e) {
+  var timer = startTimer();
   try {
     var data = JSON.parse(e.postData.contents);
+    timer.mark('parse');
 
     var missing = findMissingFields(data);
     if (missing.length) {
@@ -50,23 +52,27 @@ function doPost(e) {
     }
 
     var sheet = getSheet();
+    timer.mark('openSheet');
 
     // Cheap unlocked pre-check: rejects an obvious duplicate before paying for the Drive
     // upload. The authoritative check still runs under the lock below.
     if (isDuplicate(sheet, data.nsuId, data.nsuEmail)) {
       return jsonResponse({ status: 'error', message: duplicateMessage() });
     }
+    timer.mark('dupPreCheck');
 
     // Deliberately outside the lock — a multi-megabyte Drive upload is the slowest step here,
     // and holding the lock across it would make concurrent applicants queue behind each
     // other's uploads instead of just behind each other's row writes.
     var cv = saveCvToDrive(data.cv, data.fullName);
+    timer.mark('uploadCv');
 
     var lock = LockService.getScriptLock();
     if (!lock.tryLock(30000)) {
       discardCv(cv);
       return jsonResponse({ status: 'error', message: 'Server is busy — please try submitting again in a moment.' });
     }
+    timer.mark('acquireLock');
 
     try {
       // Re-check under the lock: another submission with the same ID or email may have
@@ -75,6 +81,7 @@ function doPost(e) {
         discardCv(cv);
         return jsonResponse({ status: 'error', message: duplicateMessage() });
       }
+      timer.mark('dupRecheck');
 
       sheet.appendRow([
         new Date(),
@@ -100,6 +107,7 @@ function doPost(e) {
         cv.url,
         '', // Email Sent — filled in by the sendPendingEmails trigger.
       ]);
+      timer.mark('appendRow');
     } finally {
       lock.releaseLock();
     }
@@ -107,7 +115,34 @@ function doPost(e) {
     return jsonResponse({ status: 'ok' });
   } catch (err) {
     return jsonResponse({ status: 'error', message: err.message });
+  } finally {
+    timer.log();
   }
+}
+
+/**
+ * Per-stage timing for doPost, written to the Apps Script "Executions" log.
+ *
+ * IMPORTANT when reading the output: these numbers start when doPost begins, which is
+ * AFTER Google has spun up the script container. If Executions reports a total noticeably
+ * larger than 'total' below, that gap is container cold start — it happens before any of
+ * this code runs and cannot be optimized away. Submitting twice in quick succession makes
+ * the second request warm, which is how you tell the two apart.
+ */
+function startTimer() {
+  var started = Date.now();
+  var last = started;
+  var parts = [];
+  return {
+    mark: function (label) {
+      var now = Date.now();
+      parts.push(label + ' ' + (now - last) + 'ms');
+      last = now;
+    },
+    log: function () {
+      console.log('doPost: ' + parts.join(' | ') + ' | total ' + (Date.now() - started) + 'ms');
+    },
+  };
 }
 
 function duplicateMessage() {

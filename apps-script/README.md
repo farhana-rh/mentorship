@@ -65,6 +65,22 @@ If you edit `Code.gs` after the first deploy, you must create a **new deployment
 - `MailApp.sendEmail(...)` means the script needs Gmail permission, and the trigger needs permission to run on your behalf — the **next deployment** and the first `createEmailTrigger` run will each prompt you to re-authorize.
 - The **Email Sent** column (column V) is added to an existing sheet automatically on the next submission — you don't need to add it by hand or start a new sheet.
 
+## Why is submission slow?
+
+Every `doPost` logs a per-stage timing breakdown. Open **Executions** in the Apps Script editor, click a run, and look for a line like:
+
+```
+doPost: parse 12ms | openSheet 890ms | dupPreCheck 210ms | uploadCv 2140ms | acquireLock 8ms | dupRecheck 190ms | appendRow 640ms | total 4090ms
+```
+
+Reading it:
+
+- **The stage with the big number is your bottleneck.** `uploadCv` usually wins, because it decodes the base64 CV and writes a multi-megabyte file to Drive.
+- **`total` starts when `doPost` starts — after Google has spun up the script container.** If the Executions view reports a duration noticeably higher than `total`, that gap is container cold start. It happens before any of this code runs and can't be optimized away. Submit twice in a row: the second request is warm, and the difference between the two is the cold start.
+- **Neither number includes the applicant's upload.** Time spent pushing the request body from their browser to Google happens before `doPost` is invoked and never appears here. If a user reports a 25-second wait while Executions shows 5 seconds, the missing 20 seconds is upload bandwidth — the only fix for that is to stop sending the CV on the submit request.
+
+The timing helper is `startTimer()` at the top of `Code.gs`; deleting the `timer.*` calls removes it with no other effect.
+
 ## Updating the deployed script
 
 Whenever `Code.gs` changes (including the fixes above), you must push the update to your live Apps Script project and redeploy:

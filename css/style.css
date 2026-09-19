@@ -746,6 +746,50 @@ button:focus-visible,
 
 .form-submit { margin-top: 8px; }
 
+/* Submit progress. A CV upload can take 20s+ on a slow mobile connection; without visible
+   movement applicants assume the form has frozen and submit again. */
+.form-progress { margin-top: 16px; }
+
+.form-progress-track {
+  height: 20px;
+  background: var(--white);
+  border: var(--outline) solid var(--ink);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+
+.form-progress-fill {
+  height: 100%;
+  width: 0;
+  background: var(--purple);
+  transition: width 200ms linear;
+}
+
+/* The bytes are all sent, but Apps Script is still writing to Drive and the Sheet. A bar
+   parked at 100% reads as stalled, so switch to a moving barber-pole with no fixed end. */
+.form-progress.is-processing .form-progress-fill {
+  width: 100%;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--purple) 0 10px,
+    var(--purple-deep) 10px 20px
+  );
+  background-size: 28px 100%;
+  animation: form-progress-stripes 700ms linear infinite;
+}
+
+@keyframes form-progress-stripes {
+  to { background-position: 28px 0; }
+}
+
+.form-progress-label {
+  margin-top: 10px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--text-body);
+}
+
 .form-status {
   margin-top: 14px;
   font-size: 0.88rem;

@@ -177,6 +177,73 @@
     statusEl.className = "form-status" + (kind ? " is-" + kind : "");
   }
 
+  /* ---------- Submit progress ---------- */
+  var progressEl = document.getElementById("formProgress");
+  var progressBar = document.getElementById("formProgressBar");
+  var progressFill = document.getElementById("formProgressFill");
+  var progressLabel = document.getElementById("formProgressLabel");
+
+  function setProgress(percent) {
+    var pct = Math.max(0, Math.min(100, Math.round(percent)));
+    if (progressFill) progressFill.style.width = pct + "%";
+    if (progressBar) progressBar.setAttribute("aria-valuenow", String(pct));
+  }
+
+  function showProgress() {
+    if (!progressEl) return;
+    progressEl.classList.remove("is-hidden");
+    progressEl.classList.remove("is-processing");
+    if (progressBar) progressBar.removeAttribute("aria-valuetext");
+    if (progressLabel) progressLabel.textContent = "Uploading your application…";
+    setProgress(0);
+  }
+
+  // The bytes are all sent but the server is still writing to Drive and the Sheet, which
+  // takes several seconds. There's no way to measure that, so drop the percentage rather
+  // than park the bar at 100% — a full bar that doesn't move reads as a crash.
+  function showProcessing() {
+    if (!progressEl || progressEl.classList.contains("is-processing")) return;
+    progressEl.classList.add("is-processing");
+    if (progressBar) {
+      progressBar.removeAttribute("aria-valuenow");
+      progressBar.setAttribute("aria-valuetext", "Saving your application, please wait");
+    }
+    if (progressLabel) progressLabel.textContent = "Saving your application — almost done…";
+  }
+
+  function hideProgress() {
+    if (!progressEl) return;
+    progressEl.classList.add("is-hidden");
+    progressEl.classList.remove("is-processing");
+    if (progressBar) progressBar.removeAttribute("aria-valuetext");
+    setProgress(0);
+  }
+
+  // XMLHttpRequest rather than fetch: fetch exposes no upload progress events, and the CV
+  // is the overwhelming majority of the request body. Resolves with the response text so
+  // the caller handles the response exactly as it did before.
+  function postWithProgress(url, body, onProgress) {
+    return new Promise(function (resolve, reject) {
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", url);
+      // No setRequestHeader("Content-Type", ...): a string body is sent as text/plain, which
+      // keeps this a "simple request" and avoids a CORS preflight that the Apps Script Web
+      // App can't answer. Setting the header explicitly would break the submission.
+      xhr.upload.addEventListener("progress", function (evt) {
+        if (evt.lengthComputable) onProgress((evt.loaded / evt.total) * 100);
+      });
+      xhr.upload.addEventListener("load", function () { onProgress(100); });
+      xhr.addEventListener("load", function () { resolve(xhr.responseText); });
+      xhr.addEventListener("error", function () {
+        reject(new Error("We couldn't reach the server. Check your connection and try again."));
+      });
+      xhr.addEventListener("timeout", function () {
+        reject(new Error("The submission timed out. Please check your connection and try again."));
+      });
+      xhr.send(body);
+    });
+  }
+
   form.addEventListener("submit", function (evt) {
     evt.preventDefault();
     setStatus("", "");
@@ -203,6 +270,7 @@
 
     submitBtn.disabled = true;
     submitLabel.textContent = "Submitting…";
+    showProgress();
 
     readCvAsBase64()
       .then(function (cv) {
@@ -229,14 +297,15 @@
           cv: cv,
         };
 
-        // Plain-string body keeps this a "simple request" (no custom Content-Type),
-        // which avoids a CORS preflight that the Apps Script Web App can't answer.
-        return fetch(SITE_CONFIG.APPS_SCRIPT_URL, {
-          method: "POST",
-          body: JSON.stringify(payload),
-        });
+        return postWithProgress(
+          SITE_CONFIG.APPS_SCRIPT_URL,
+          JSON.stringify(payload),
+          function (percent) {
+            setProgress(percent);
+            if (percent >= 100) showProcessing();
+          }
+        );
       })
-      .then(function (res) { return res.text(); })
       .then(function (text) {
         var data;
         try {
@@ -259,6 +328,7 @@
         setStatus(err.message || ("Something went wrong. Please try again, or email " + SITE_CONFIG.CONTACT_EMAIL + "."), "error");
       })
       .then(function () {
+        hideProgress();
         submitBtn.disabled = false;
         submitLabel.textContent = "Submit Application";
       });
