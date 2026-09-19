@@ -144,9 +144,24 @@ function sendConfirmationEmail(data) {
       body: body,
     });
   } catch (err) {
-    // Swallow errors (e.g. daily email quota reached) — the registration itself already
-    // succeeded and shouldn't be reported as failed just because the confirmation email didn't send.
+    // Never fail a good registration just because the email didn't send, but do log the
+    // reason so it shows up in the Apps Script "Executions" view.
+    console.error('Confirmation email failed for ' + data.nsuEmail + ': ' + err.message);
   }
+}
+
+/**
+ * Run this manually from the Apps Script editor to test email sending on its own.
+ * Change the address first, then press Run and check your inbox (and the Executions log).
+ */
+function testEmail() {
+  MailApp.sendEmail({
+    to: CONTACT_EMAIL,
+    replyTo: CONTACT_EMAIL,
+    subject: 'WIE Mentorship — test email',
+    body: 'If you are reading this, MailApp is authorized and working.',
+  });
+  console.log('Sent. Remaining quota today: ' + MailApp.getRemainingDailyQuota());
 }
 
 function getSheet() {
