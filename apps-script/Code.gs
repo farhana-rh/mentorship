@@ -40,6 +40,11 @@ var REQUIRED_FIELDS = {
 // because the client-side pattern is trivially bypassed by POSTing to this URL directly.
 var NSU_ID_PATTERN = /^[0-9]{10}$/;
 
+// Only NSU addresses are eligible. Keep in sync with NSU_EMAIL_PATTERN in js/form.js —
+// and note this is the check that counts, for the same reason as the one above.
+// Case-insensitive: the domain part of an address is not case-sensitive.
+var NSU_EMAIL_PATTERN = /^[^@\s]+@northsouth\.edu$/i;
+
 // Column indexes (1-based) of NSU ID and NSU Email within HEADERS, used for the duplicate check.
 var NSU_ID_COLUMN = 3;
 var NSU_EMAIL_COLUMN = 4;
@@ -70,6 +75,10 @@ function doPost(e) {
     // Cheap and before anything expensive: no sheet open, no Drive upload.
     if (!NSU_ID_PATTERN.test(String(data.nsuId).trim())) {
       return jsonResponse({ status: 'error', message: 'Please enter a valid 10-digit NSU ID.' });
+    }
+
+    if (!NSU_EMAIL_PATTERN.test(String(data.nsuEmail).trim())) {
+      return jsonResponse({ status: 'error', message: 'Please use your NSU email address, ending in @northsouth.edu.' });
     }
 
     var sheet = openRegistrationSheet();

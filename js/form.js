@@ -132,6 +132,42 @@
     nsuIdInput.addEventListener("blur", refreshNsuIdValidity);
   }
 
+  /* ---------- NSU email domain ----------
+   *
+   * Only northsouth.edu addresses are eligible, so a personal address is rejected here
+   * rather than after a full CV upload and a round trip. Done with setCustomValidity
+   * instead of a pattern attribute because the attribute is case-sensitive, and matching
+   * NorthSouth.edu or NORTHSOUTH.EDU would otherwise need every letter spelled out as a
+   * character class. Keep in sync with NSU_EMAIL_PATTERN in apps-script/Code.gs.
+   */
+  var nsuEmailInput = document.getElementById("nsuEmail");
+  var nsuEmailError = document.getElementById("nsuEmailError");
+  var NSU_EMAIL_PATTERN = /^[^@\s]+@northsouth\.edu$/i;
+  var NSU_EMAIL_MESSAGE = "Please use your NSU email address, ending in @northsouth.edu.";
+
+  function refreshNsuEmailValidity() {
+    if (!nsuEmailInput) return;
+    // Clear first, for the same reason as the NSU ID: a custom message keeps the control
+    // invalid and would mask the browser's own re-check of type="email" on the new value.
+    nsuEmailInput.setCustomValidity("");
+    // `required` already covers empty and type="email" already covers malformed — this
+    // only adds the domain rule on top, so it stays quiet until there's something to judge
+    // and never shows two complaints about the same value at once.
+    var value = nsuEmailInput.value.trim();
+    var wrongDomain = Boolean(value) && !nsuEmailInput.validity.typeMismatch &&
+      !NSU_EMAIL_PATTERN.test(value);
+    if (wrongDomain) nsuEmailInput.setCustomValidity(NSU_EMAIL_MESSAGE);
+    if (nsuEmailError) {
+      nsuEmailError.textContent = wrongDomain ? NSU_EMAIL_MESSAGE : "";
+      nsuEmailError.classList.toggle("is-hidden", !wrongDomain);
+    }
+  }
+
+  if (nsuEmailInput) {
+    nsuEmailInput.addEventListener("input", refreshNsuEmailValidity);
+    nsuEmailInput.addEventListener("blur", refreshNsuEmailValidity);
+  }
+
   /* ---------- Required single-choice groups ----------
    *
    * These are radios rendered as chips, and .chip input is opacity:0 — a native `required`
@@ -364,6 +400,22 @@
    */
   var SUBMIT_TIMEOUT_MS = 90000;
 
+  /* fetch() rejects a dropped or blocked connection with a TypeError whose message is the
+   * browser's own wording — "Failed to fetch" in Chrome, "NetworkError when attempting to
+   * fetch resource" in Firefox — and that string went straight onto the status line.
+   *
+   * The wording deliberately does NOT promise nothing was saved. A connection can drop
+   * after the request arrived and doPost wrote the row, with only the response lost, so
+   * the honest position is the same one the time-out path takes: retrying is safe, because
+   * the duplicate check will tell them if it already went through.
+   */
+  function networkError() {
+    return new Error(
+      "We couldn't reach the server — please check your connection and try again. " +
+      "If your application did go through, we'll tell you when you resubmit."
+    );
+  }
+
   function postWithTimeout(url, body) {
     // Plain-string body keeps this a "simple request" (no custom Content-Type), which
     // avoids a CORS preflight that the Apps Script Web App can't answer. AbortController
@@ -371,7 +423,9 @@
     // "Submit progress" note above on why xhr.upload cannot be used.
     var options = { method: "POST", body: body };
 
-    if (typeof AbortController === "undefined") return fetch(url, options);
+    if (typeof AbortController === "undefined") {
+      return fetch(url, options).catch(function () { throw networkError(); });
+    }
 
     var controller = new AbortController();
     var timedOut = false;
@@ -388,7 +442,7 @@
       },
       function (err) {
         clearTimeout(timer);
-        if (!timedOut) throw err;
+        if (!timedOut) throw networkError();
         // Aborting stops us waiting; it does not stop Apps Script, which may well have
         // saved the row already. Retrying is safe — the server rejects a duplicate NSU ID
         // or email — so point them at that rather than claiming it failed.
@@ -457,6 +511,7 @@
     // hand rather than left stale from the untrimmed value.
     trimAllFields();
     refreshNsuIdValidity();
+    refreshNsuEmailValidity();
 
     if (!form.reportValidity()) return;
     if (!validateMentorChoices()) return;
@@ -523,7 +578,9 @@
           tSent = now();
           return postWithTimeout(SITE_CONFIG.APPS_SCRIPT_URL, body);
         })
-        .then(function (res) { return res.text(); })
+        .then(function (res) {
+          return res.text().catch(function () { throw networkError(); });
+        })
         .then(function (text) {
           var tDone = now();
           var data = null;

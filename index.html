@@ -275,7 +275,12 @@
 
             <div class="form-field">
               <label for="nsuEmail">NSU Email <span class="req">*</span></label>
+              <!-- The @northsouth.edu rule lives in js/form.js rather than in a pattern
+                   attribute, so the domain can be matched case-insensitively, and again in
+                   apps-script/Code.gs because this one is trivially bypassed. -->
               <input type="email" id="nsuEmail" name="nsuEmail" autocomplete="email" required />
+              <p class="field-hint">Must be your NSU address, ending in @northsouth.edu.</p>
+              <p class="field-error is-hidden" id="nsuEmailError"></p>
             </div>
 
             <div class="form-field">

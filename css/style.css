@@ -643,7 +643,11 @@ button:focus-visible,
 .form-field textarea {
   width: 100%;
   font: inherit;
-  font-size: 0.94rem;
+  /* Exactly 1rem/16px, and not a hair under. iOS Safari zooms the whole page in on any
+     focused form control smaller than 16px and does not zoom back out, so 0.94rem (15px)
+     made the page lurch sideways on every single field of a long form. This is the one
+     font size on the site that is a functional constraint rather than a design choice. */
+  font-size: 1rem;
   color: var(--ink);
   background: var(--white);
   border: var(--outline) solid var(--ink);
@@ -1001,7 +1005,14 @@ button:focus-visible,
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 26px;
+  /* 13px text on its own left a 21px-tall tap target — under the 24px minimum, and well
+     under the 44px iOS asks for. min-height grows the target to 44px and the padding keeps
+     it from collapsing if the text ever wraps; the pulled-in margins cancel the extra
+     height out again, so the link's text stays where it already sat on the page. */
+  min-height: 44px;
+  padding: 10px 0;
+  margin-top: -10px;
+  margin-bottom: 16px;
   font-size: 13px;
   font-weight: 500;
   color: var(--text-body);
