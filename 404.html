@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex" />
+<title>Page not found — INSB WIE Mentorship Program</title>
+<meta name="description" content="That page doesn't exist. Find your way back to the WIE Empower Mentorship Program." />
+
+<!--
+  GitHub Pages serves this file for ANY missing path under the site, and it is served at
+  the URL that was requested — /mentorship/typo.html, /mentorship/a/b/c, and so on. The
+  browser therefore resolves relative URLs against whatever directory was asked for, which
+  usually does not exist. So everything here is either inlined (the styles) or written as
+  an absolute path from the domain root (the links and the logo). The small script at the
+  bottom keeps those absolute paths correct if the repository is ever renamed or the site
+  moves to a custom domain.
+-->
+
+<link rel="icon" type="image/png" href="/mentorship/assets/images/favicon/favicon-96x96.png" sizes="96x96" data-path="assets/images/favicon/favicon-96x96.png" />
+<link rel="shortcut icon" href="/mentorship/assets/images/favicon/favicon.ico" data-path="assets/images/favicon/favicon.ico" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<style>
+  /* Inlined rather than loading css/style.css: that path would 404 too from any nested
+     URL, and a broken 404 page is worse than a plain one. Tokens mirror the site's. */
+  :root {
+    --bg: #f5efff;
+    --purple: #7b4fe0;
+    --purple-deep: #5a30bd;
+    --purple-soft: #cdb8f7;
+    --ink: #1a1425;
+    --white: #ffffff;
+    --text-body: #453d59;
+    --yellow: #ffd966;
+    --pink: #ff9fc0;
+    --mint: #8fe3c7;
+    --outline: 3px;
+    --ease: cubic-bezier(0.34, 1.2, 0.4, 1);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body, h1, p { margin: 0; padding: 0; }
+  img { max-width: 100%; display: block; }
+  a { text-decoration: none; color: inherit; }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    background: var(--bg);
+    font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+    color: var(--text-body);
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  .deco { position: absolute; pointer-events: none; }
+
+  .card {
+    position: relative;
+    width: 100%;
+    max-width: 560px;
+    background: var(--white);
+    border: var(--outline) solid var(--ink);
+    border-radius: 28px;
+    box-shadow: 6px 6px 0 var(--purple);
+    padding: clamp(28px, 7vw, 48px) clamp(20px, 6vw, 44px);
+    text-align: center;
+  }
+
+  .lockup {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--white);
+    border: var(--outline) solid var(--ink);
+    border-radius: 999px;
+    box-shadow: 4px 4px 0 var(--purple);
+    padding: 8px 18px 8px 8px;
+    margin-bottom: 26px;
+  }
+  .lockup img { height: 30px; width: auto; }
+  .lockup span {
+    font-family: "Baloo 2", system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: var(--ink);
+  }
+
+  .code {
+    font-family: "Baloo 2", system-ui, sans-serif;
+    font-weight: 800;
+    font-size: clamp(4rem, 18vw, 7rem);
+    line-height: 0.9;
+    color: var(--purple);
+    -webkit-text-stroke: 3px var(--ink);
+    paint-order: stroke fill;
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-family: "Baloo 2", system-ui, sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.3rem, 5vw, 1.75rem);
+    color: var(--ink);
+    margin-bottom: 12px;
+  }
+
+  .lede { font-size: 0.95rem; line-height: 1.6; margin-bottom: 28px; }
+
+  .actions { display: flex; flex-direction: column; gap: 12px; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: "Baloo 2", system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 13px 24px;
+    border: var(--outline) solid var(--ink);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: transform 140ms var(--ease), box-shadow 140ms var(--ease);
+  }
+  .btn-primary { background: var(--purple); color: var(--white); box-shadow: 4px 4px 0 var(--ink); }
+  .btn-ghost { background: var(--white); color: var(--ink); box-shadow: 4px 4px 0 var(--purple-soft); }
+  .btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--ink); }
+  .btn-ghost:hover { box-shadow: 6px 6px 0 var(--purple); }
+  .btn:focus-visible { outline: 3px solid var(--purple-deep); outline-offset: 3px; }
+
+  .help { margin-top: 24px; font-size: 0.85rem; }
+  .help a { color: var(--purple-deep); font-weight: 600; text-decoration: underline; }
+
+  @media (min-width: 480px) {
+    .actions { flex-direction: row; justify-content: center; flex-wrap: wrap; }
+    .btn { flex: 0 1 auto; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<svg class="deco" style="top:10%; left:7%; width:26px;" viewBox="0 0 24 24" aria-hidden="true"><path fill="#ffd966" stroke="#1a1425" stroke-width="1.4" stroke-linejoin="round" d="M12 1l2.6 8.4L23 12l-8.4 2.6L12 23l-2.6-8.4L1 12l8.4-2.6L12 1z"/></svg>
+<svg class="deco" style="top:16%; right:9%; width:18px;" viewBox="0 0 24 24" aria-hidden="true"><path fill="#ff9fc0" stroke="#1a1425" stroke-width="1.4" stroke-linejoin="round" d="M12 1l2.6 8.4L23 12l-8.4 2.6L12 23l-2.6-8.4L1 12l8.4-2.6L12 1z"/></svg>
+<svg class="deco" style="bottom:12%; left:10%; width:20px;" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="#8fe3c7" stroke="#1a1425" stroke-width="1.6"/></svg>
+<svg class="deco" style="bottom:18%; right:7%; width:24px;" viewBox="0 0 24 24" aria-hidden="true"><path fill="#cdb8f7" stroke="#1a1425" stroke-width="1.4" stroke-linejoin="round" d="M12 1l2.6 8.4L23 12l-8.4 2.6L12 23l-2.6-8.4L1 12l8.4-2.6L12 1z"/></svg>
+
+<main class="card">
+  <a class="lockup" href="/mentorship/index.html" data-path="index.html">
+    <img src="/mentorship/assets/images/wie-logo.png" width="120" height="120"
+         alt="IEEE NSU SB WIE Affinity Group logo" data-path="assets/images/wie-logo.png" />
+    <span>IEEE NSU SB WIE Affinity Group</span>
+  </a>
+
+  <p class="code">404</p>
+  <h1>This page doesn't exist</h1>
+  <p class="lede">
+    The link may be out of date, or the address might have a typo in it.
+    Everything below still works.
+  </p>
+
+  <div class="actions">
+    <a class="btn btn-primary" href="/mentorship/index.html#register" data-path="index.html#register">Register as a Mentee</a>
+    <a class="btn btn-ghost" href="/mentorship/mentors.html" data-path="mentors.html">Meet the Mentors</a>
+    <a class="btn btn-ghost" href="/mentorship/index.html" data-path="index.html">Home</a>
+  </div>
+
+  <p class="help">
+    Still stuck? Email <a href="mailto:ieeewie.nsu@gmail.com">ieeewie.nsu@gmail.com</a>
+  </p>
+</main>
+
+<script>
+(function () {
+  // The absolute paths above assume the site lives at /mentorship/. If the repository is
+  // renamed, or the site moves to a custom domain (where it is served from the root),
+  // those paths would break — so recompute the site root from the current URL and rewrite
+  // them. On a normal 404 under /mentorship/ this finds no difference and does nothing.
+  var HARDCODED = "/mentorship/";
+  var segments = location.pathname.split("/").filter(Boolean);
+  var isProjectSite = /\.github\.io$/i.test(location.hostname);
+  var base = isProjectSite && segments.length ? "/" + segments[0] + "/" : "/";
+
+  if (base === HARDCODED) return;
+
+  var nodes = document.querySelectorAll("[data-path]");
+  for (var i = 0; i < nodes.length; i++) {
+    var node = nodes[i];
+    var path = node.getAttribute("data-path");
+    if (node.tagName === "IMG") node.src = base + path;
+    else node.href = base + path;
+  }
+})();
+</script>
+
+</body>
+</html>

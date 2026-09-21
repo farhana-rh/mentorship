@@ -19,10 +19,26 @@ var HEADERS = [
   'Email Sent',
 ];
 
-var REQUIRED_FIELDS = [
-  'fullName', 'nsuId', 'nsuEmail', 'department', 'academicYear',
-  'cgpaRange', 'whyJoin', 'mentorChoice1', 'meetingFormat', 'meetingFrequency', 'meetingTime',
-];
+// Payload key -> what to call it when telling an applicant it's missing. The client
+// validates all of these before submitting, so a message built from this list only ever
+// reaches someone POSTing directly — but it still shouldn't read like a stack trace.
+var REQUIRED_FIELDS = {
+  fullName: 'your full name',
+  nsuId: 'your NSU ID',
+  nsuEmail: 'your NSU email',
+  department: 'your department',
+  academicYear: 'your academic year',
+  cgpaRange: 'your CGPA range',
+  whyJoin: 'why you want to join',
+  mentorChoice1: 'your first-choice mentor',
+  meetingFormat: 'your preferred meeting format',
+  meetingFrequency: 'your preferred meeting frequency',
+  meetingTime: 'your preferred meeting time',
+};
+
+// Keep in sync with the pattern attribute on #nsuId in index.html. Enforced again here
+// because the client-side pattern is trivially bypassed by POSTing to this URL directly.
+var NSU_ID_PATTERN = /^[0-9]{10}$/;
 
 // Column indexes (1-based) of NSU ID and NSU Email within HEADERS, used for the duplicate check.
 var NSU_ID_COLUMN = 3;
@@ -48,15 +64,22 @@ function doPost(e) {
 
     var missing = findMissingFields(data);
     if (missing.length) {
-      return jsonResponse({ status: 'error', message: 'Missing required fields: ' + missing.join(', ') });
+      return jsonResponse({ status: 'error', message: 'Please add ' + toSentenceList(missing) + ' before submitting.' });
     }
 
-    var sheet = getSheet();
+    // Cheap and before anything expensive: no sheet open, no Drive upload.
+    if (!NSU_ID_PATTERN.test(String(data.nsuId).trim())) {
+      return jsonResponse({ status: 'error', message: 'Please enter a valid 10-digit NSU ID.' });
+    }
+
+    var sheet = openRegistrationSheet();
     timer.mark('openSheet');
 
     // Cheap unlocked pre-check: rejects an obvious duplicate before paying for the Drive
-    // upload. The authoritative check still runs under the lock below.
-    if (isDuplicate(sheet, data.nsuId, data.nsuEmail)) {
+    // upload. The authoritative check still runs under the lock below, but only over rows
+    // added after this one stopped — so the scan is paid for once, not twice.
+    var scanned = scanForDuplicate(sheet, 2, data.nsuId, data.nsuEmail);
+    if (scanned.duplicate) {
       return jsonResponse({ status: 'error', message: duplicateMessage() });
     }
     timer.mark('dupPreCheck');
@@ -64,8 +87,8 @@ function doPost(e) {
     // Deliberately outside the lock — a multi-megabyte Drive upload is the slowest step here,
     // and holding the lock across it would make concurrent applicants queue behind each
     // other's uploads instead of just behind each other's row writes.
-    var cv = saveCvToDrive(data.cv, data.fullName);
-    timer.mark('uploadCv');
+    var cv = saveCvToDrive(data.cv, data.fullName, timer);
+    timer.mark('createFile');
 
     var lock = LockService.getScriptLock();
     if (!lock.tryLock(30000)) {
@@ -76,14 +99,18 @@ function doPost(e) {
 
     try {
       // Re-check under the lock: another submission with the same ID or email may have
-      // landed while this one was uploading its CV.
-      if (isDuplicate(sheet, data.nsuId, data.nsuEmail)) {
+      // landed while this one was uploading its CV. Only rows that appeared since the
+      // pre-check can be new, and normally there are none — so this costs one getLastRow()
+      // rather than a second full read of the ID and email columns.
+      var lastRow = sheet.getLastRow();
+      if (lastRow > scanned.lastRow &&
+          scanForDuplicate(sheet, scanned.lastRow + 1, data.nsuId, data.nsuEmail).duplicate) {
         discardCv(cv);
         return jsonResponse({ status: 'error', message: duplicateMessage() });
       }
       timer.mark('dupRecheck');
 
-      sheet.appendRow([
+      writeRow(sheet, lastRow + 1, [
         new Date(),
         sanitize(data.fullName),
         sanitize(data.nsuId),
@@ -107,12 +134,14 @@ function doPost(e) {
         cv.url,
         '', // Email Sent — filled in by the sendPendingEmails trigger.
       ]);
-      timer.mark('appendRow');
+      timer.mark('writeRow');
     } finally {
       lock.releaseLock();
     }
 
-    return jsonResponse({ status: 'ok' });
+    // ms is for the timing log in js/form.js; it measures doPost only, so the gap between
+    // it and the browser's round-trip time is network plus Apps Script container start-up.
+    return jsonResponse({ status: 'ok', ms: timer.total() });
   } catch (err) {
     return jsonResponse({ status: 'error', message: err.message });
   } finally {
@@ -139,6 +168,9 @@ function startTimer() {
       parts.push(label + ' ' + (now - last) + 'ms');
       last = now;
     },
+    total: function () {
+      return Date.now() - started;
+    },
     log: function () {
       console.log('doPost: ' + parts.join(' | ') + ' | total ' + (Date.now() - started) + 'ms');
     },
@@ -150,33 +182,68 @@ function duplicateMessage() {
 }
 
 function findMissingFields(data) {
-  var missing = REQUIRED_FIELDS.filter(function (key) { return !data[key]; });
-  if (!data.interestAreas || !data.interestAreas.length) missing.push('interestAreas');
-  if (!data.goals || !data.goals.length) missing.push('goals');
-  if (!data.cv || !data.cv.base64) missing.push('cv');
+  var missing = Object.keys(REQUIRED_FIELDS)
+    // Trimmed, so a value of "   " counts as missing rather than as an answer.
+    .filter(function (key) { return !String(data[key] == null ? '' : data[key]).trim(); })
+    .map(function (key) { return REQUIRED_FIELDS[key]; });
+  if (!data.interestAreas || !data.interestAreas.length) missing.push('at least one area of interest');
+  if (!data.goals || !data.goals.length) missing.push('at least one program goal');
+  if (!data.cv || !data.cv.base64) missing.push('your CV');
   return missing;
 }
 
-function isDuplicate(sheet, nsuId, nsuEmail) {
+// "a, b and c" — so the message reads as a sentence rather than a field dump.
+function toSentenceList(items) {
+  if (items.length === 1) return items[0];
+  return items.slice(0, -1).join(', ') + ' and ' + items[items.length - 1];
+}
+
+/**
+ * Scans the NSU ID and email columns from startRow downwards, and reports the last row it
+ * saw as well as the verdict — so the re-check under the lock can resume from there
+ * instead of reading the whole sheet a second time.
+ */
+function scanForDuplicate(sheet, startRow, nsuId, nsuEmail) {
   var lastRow = sheet.getLastRow();
-  if (lastRow < 2) return false;
-  var values = sheet.getRange(2, NSU_ID_COLUMN, lastRow - 1, NSU_EMAIL_COLUMN - NSU_ID_COLUMN + 1).getValues();
+  if (lastRow < startRow) return { duplicate: false, lastRow: lastRow };
+  var values = sheet
+    .getRange(startRow, NSU_ID_COLUMN, lastRow - startRow + 1, NSU_EMAIL_COLUMN - NSU_ID_COLUMN + 1)
+    .getValues();
   var id = String(nsuId).trim().toLowerCase();
   var email = String(nsuEmail).trim().toLowerCase();
-  return values.some(function (row) {
+  var duplicate = values.some(function (row) {
     return String(row[0]).trim().toLowerCase() === id || String(row[1]).trim().toLowerCase() === email;
   });
+  return { duplicate: duplicate, lastRow: lastRow };
+}
+
+/**
+ * Writes one registration at a row we already know is empty. appendRow would go and look
+ * the last row up again on the Sheets service; we got it from the duplicate re-check for
+ * free. Safe because everything that writes these rows holds the script lock.
+ */
+function writeRow(sheet, row, values) {
+  try {
+    sheet.getRange(row, 1, 1, values.length).setValues([values]);
+  } catch (err) {
+    // Only reachable when the grid has been trimmed to its contents and has no row `row`
+    // yet. getRange throws before writing anything, so falling back cannot double-write.
+    sheet.appendRow(values);
+  }
 }
 
 // Neutralizes spreadsheet formula injection: a value starting with =, +, -, or @ would
 // otherwise be evaluated as a formula when the sheet owner opens it.
 function sanitize(value) {
-  var str = String(value == null ? '' : value);
+  // Trimmed before the test, not just for tidiness: the guard is anchored with ^, so an
+  // untrimmed "  =SUM(A1)" slipped past it while still reading as a formula to Sheets.
+  var str = String(value == null ? '' : value).trim();
   return /^[=+\-@]/.test(str) ? "'" + str : str;
 }
 
-function saveCvToDrive(cv, fullName) {
+function saveCvToDrive(cv, fullName, timer) {
   var decoded = Utilities.base64Decode(cv.base64);
+  if (timer) timer.mark('decodeCv');
   if (decoded.length > MAX_CV_BYTES) {
     throw new Error('CV exceeds the maximum allowed size.');
   }
@@ -185,6 +252,7 @@ function saveCvToDrive(cv, fullName) {
     throw new Error('CV must be a valid PDF file.');
   }
   var folder = DriveApp.getFolderById(CV_FOLDER_ID);
+  if (timer) timer.mark('openFolder');
   var blob = Utilities.newBlob(decoded, 'application/pdf', (fullName || 'applicant') + ' - CV.pdf');
   // No setSharing() call: it costs an extra Drive round-trip on every submission, and CVs
   // contain personal data that shouldn't be readable by anyone with the link. Share the CV
@@ -307,6 +375,31 @@ function testEmail() {
     body: 'If you are reading this, MailApp is authorized and working.',
   });
   console.log('Sent. Remaining quota today: ' + MailApp.getRemainingDailyQuota());
+}
+
+/**
+ * The hot-path sheet opener: one openById, one getSheetByName, nothing else.
+ *
+ * getSheet() below also bootstraps and backfills the header row, which costs a
+ * getLastRow() and usually a getLastColumn() — two round-trips spent, on every single
+ * submission, checking for work that after the first run is never there. That bootstrap
+ * still happens, just off the applicant's critical path: setupSheet() runs it on demand
+ * and the sendPendingEmails trigger runs it every 5 minutes. This falls back to it if the
+ * sheet genuinely doesn't exist yet.
+ */
+function openRegistrationSheet() {
+  var sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(SHEET_NAME);
+  return sheet || getSheet();
+}
+
+/**
+ * Run this ONCE from the Apps Script editor after setting SPREADSHEET_ID, and again any
+ * time you add a column to HEADERS. It creates the sheet and its header row, which doPost
+ * no longer checks for on every request.
+ */
+function setupSheet() {
+  getSheet();
+  console.log('Sheet ready: ' + SHEET_NAME);
 }
 
 function getSheet() {

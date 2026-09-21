@@ -97,7 +97,7 @@ const SITE_CONFIG = {
       experience: "15+ years",
       bio: "Achia Nila is the Founder and Chief Technology Officer of LuminaDev. She is also the Founder and former CEO of Women in Digital, where she has worked to encourage women's participation in technology through training, mentorship, and innovation initiatives.\n\nWith over 15 years of experience in technology and digital transformation, she brings extensive expertise in emerging technologies, product development, and technical leadership.",
       tags: ["Cybersecurity", "Women in Technology and Digital Innovation"],
-      photo: "assets/images/mentors/achia-nila.png",
+      photo: "assets/images/mentors/achia-nila.jpg",
     },
     {
       name: "Tanzeem Haque",
@@ -107,7 +107,7 @@ const SITE_CONFIG = {
       ],
       bio: "Tanzeem Haque works in ACI PLC's AI division, where she leads initiatives across data infrastructure, data science, analytics, and engineering. She also serves as Director at DataEins, working on data systems for the healthcare sector.\n\nShe has mentored students at the Technical University of Munich since 2023 and previously worked as a Data Engineer at Smartify IT Solutions GmbH and Significo Health in Germany.\n\nHer experience spans data engineering, data science, analytics, and technology-driven healthcare solutions.",
       tags: ["Data Engineering", "Data Science", "Data Analytics"],
-      photo: "assets/images/mentors/tanzeem-haque.png",
+      photo: "assets/images/mentors/tanzeem-haque.jpg",
     },
     {
       name: "Afra Kabir",
@@ -150,7 +150,7 @@ const SITE_CONFIG = {
       ],
       bio: "Tahmina Akhter is a Data Scientist and System Development Engineer at Intel Corporation. She earned her PhD from the University of Texas at El Paso and received the Frank B. Cotton Trust Graduate Fellowship.\n\nShe also brings a strong academic and research background in engineering and advanced materials. Her professional experience spans semiconductor engineering, process development, manufacturing analytics, quality improvement, and data-driven system development.",
       tags: ["Higher Study", "Research in Semiconductor"],
-      photo: "assets/images/mentors/tahmina-akhter.png",
+      photo: "assets/images/mentors/tahmina-akhter.jpg",
     },
     
     {
@@ -161,7 +161,7 @@ const SITE_CONFIG = {
       ],
       bio: "Tasmia Tabassum Rahman is an Assistant Engineering Program Manager at ULKASEMI Pvt. Limited. Beyond her technical work, she has been involved in community and leadership initiatives through the Hult Prize Foundation and Anirban Bangladesh.\n\nHer professional experience spans engineering program management, communication systems, embedded technologies, and technical leadership.",
       tags: ["Biomedical Antenna Research", "Semiconductor Industry (Analog Layout & Physical Design)", "Research Methodology & Project Planning", "Engineering Project Management", "Antenna Design & RF/Microwave Engineering"],
-      photo: "assets/images/mentors/tasmia-tabassum-rahman.png",
+      photo: "assets/images/mentors/tasmia-tabassum-rahman.jpg",
     },
     {
       name: "Fardifa Fathmiul Alam",

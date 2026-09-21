@@ -245,13 +245,18 @@ button:focus-visible,
   gap: 12px;
 }
 
+/* The brand used to be `flex: 1 1 auto` with `overflow: hidden`, which made it the only
+   element in the header that could give way. Because the logos are flex-shrink: 0, they
+   didn't scale down — they were simply clipped by the overflow, so on a 375px phone the
+   logo strip lost pixels while both CTAs kept their full desktop width. The logos are the
+   identity here: they never shrink and never clip. What yields, in order, is the secondary
+   CTA, then the brand text. */
 .brand {
   display: flex;
   align-items: center;
   gap: 8px;
   min-width: 0;
-  flex: 1 1 auto;
-  overflow: hidden;
+  flex: 0 1 auto;
 }
 
 .brand img {
@@ -260,7 +265,10 @@ button:focus-visible,
   flex-shrink: 0;
 }
 
+/* Hidden on the narrowest phones (see the 360px breakpoint): below that the logo strip
+   plus Register already fills the bar, and the report's priority is logos over wordmark. */
 .brand-text {
+  display: none;
   min-width: 0;
   line-height: 1.05;
 }
@@ -297,6 +305,13 @@ button:focus-visible,
   flex-shrink: 0;
   padding: 10px 16px;
   font-size: 0.86rem;
+}
+
+/* The second CTA is what gives way first on small screens — deliberately kept as a
+   display toggle rather than letting the buttons squash, since a shrunken button with
+   ellipsised text is worse than no button. Restored at 480px. */
+.header-cta-secondary {
+  display: none;
 }
 
 /* ---------- Decorative elements ---------- */
@@ -716,6 +731,14 @@ button:focus-visible,
 .chip input:focus-visible + span {
   outline: 3px solid var(--purple-deep);
   outline-offset: 2px;
+}
+
+/* Marks a required single-choice group the applicant skipped. The chips carry the
+   highlight because the inputs themselves are opacity:0 — there is no control to outline,
+   and the group as a whole is what's missing an answer. */
+.radio-grid[aria-invalid="true"] .chip span {
+  border-color: #c23a5e;
+  background: #fff5f8;
 }
 
 .chip:hover span { transform: translate(-1px, -1px); }
@@ -1326,9 +1349,18 @@ button:focus-visible,
    Breakpoints (mobile-first — base styles above are the 360px baseline)
    ========================================================================== */
 
+/* Logo strip (108px) + Register (94px) + gaps leaves ~106px here — enough for the
+   wordmark to render without ellipsis. */
+@media (min-width: 360px) {
+  .brand-text { display: block; }
+}
+
 @media (min-width: 480px) {
   .highlight-grid { grid-template-columns: 1fr 1fr; }
   .steps { grid-template-columns: 1fr 1fr; }
+
+  /* Room for both CTAs alongside the logos and wordmark from here up. */
+  .header-cta-secondary { display: inline-flex; }
 }
 
 @media (min-width: 640px) {

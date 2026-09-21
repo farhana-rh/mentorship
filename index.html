@@ -25,16 +25,16 @@
 <header class="site-header" id="siteHeader">
   <div class="container">
     <div class="brand">
-      <img src="assets/images/nsu_logo.png" alt="IEEE NSU Student Branch logo" />
-      <img src="assets/images/ieee-nsu-logo.png" alt="IEEE NSU Student Branch logo" />
-      <img src="assets/images/wie-logo.png" alt="" aria-hidden="true" style="height:30px;" />
+      <img src="assets/images/nsu_logo.png" width="99" height="120" alt="IEEE NSU Student Branch logo" />
+      <img src="assets/images/ieee-nsu-logo.png" width="120" height="120" alt="IEEE NSU Student Branch logo" />
+      <img src="assets/images/wie-logo.png" width="120" height="120" alt="" aria-hidden="true" style="height:30px;" />
       <div class="brand-text">
         <strong>WIE Mentorship</strong>
         <span>Cohort 1 | 2026</span>
       </div>
     </div>
     <div class="header-actions">
-      <a href="mentors.html" class="btn btn-ghost header-cta">About Mentors</a>
+      <a href="mentors.html" class="btn btn-ghost header-cta header-cta-secondary">About Mentors</a>
       <a href="#register" class="btn btn-primary header-cta">Register</a>
     </div>
   </div>
@@ -51,7 +51,7 @@
 
     <div class="container">
       <div class="hero-lockup" data-reveal>
-        <img src="assets/images/wie-logo.png" alt="IEEE NSU SB WIE Affinity Group logo" />
+        <img src="assets/images/wie-logo.png" width="120" height="120" alt="IEEE NSU SB WIE Affinity Group logo" />
         <span>IEEE NSU SB WIE Affinity Group</span>
       </div>
 
@@ -264,7 +264,13 @@
 
             <div class="form-field">
               <label for="nsuId">NSU ID <span class="req">*</span></label>
-              <input type="text" id="nsuId" name="nsuId" inputmode="numeric" required />
+              <!-- inputmode only picks the phone keyboard; pattern is what actually
+                   validates. Keep in sync with NSU_ID_PATTERN in apps-script/Code.gs. -->
+              <input type="text" id="nsuId" name="nsuId" inputmode="numeric"
+                     pattern="[0-9]{10}" minlength="10" maxlength="10"
+                     autocomplete="off" required />
+              <p class="field-hint">10 digits, for example 2211234042.</p>
+              <p class="field-error is-hidden" id="nsuIdError"></p>
             </div>
 
             <div class="form-field">
@@ -346,18 +352,24 @@
             <legend>Availability</legend>
 
             <div class="form-field">
-              <span class="form-field-label">Preferred meeting format <span class="req">*</span></span>
-              <div class="radio-grid" id="meetingFormatGroup"></div>
+              <span class="form-field-label" id="meetingFormatLabel">Preferred meeting format <span class="req">*</span></span>
+              <div class="radio-grid" id="meetingFormatGroup" role="radiogroup"
+                   aria-required="true" aria-labelledby="meetingFormatLabel"></div>
+              <p class="field-error is-hidden" id="meetingFormatError">Please choose a meeting format.</p>
             </div>
 
             <div class="form-field">
-              <span class="form-field-label">Preferred meeting frequency <span class="req">*</span></span>
-              <div class="radio-grid" id="meetingFrequencyGroup"></div>
+              <span class="form-field-label" id="meetingFrequencyLabel">Preferred meeting frequency <span class="req">*</span></span>
+              <div class="radio-grid" id="meetingFrequencyGroup" role="radiogroup"
+                   aria-required="true" aria-labelledby="meetingFrequencyLabel"></div>
+              <p class="field-error is-hidden" id="meetingFrequencyError">Please choose how often you'd like to meet.</p>
             </div>
 
             <div class="form-field">
-              <span class="form-field-label">Preferred meeting time <span class="req">*</span></span>
-              <div class="radio-grid" id="meetingTimeGroup"></div>
+              <span class="form-field-label" id="meetingTimeLabel">Preferred meeting time <span class="req">*</span></span>
+              <div class="radio-grid" id="meetingTimeGroup" role="radiogroup"
+                   aria-required="true" aria-labelledby="meetingTimeLabel"></div>
+              <p class="field-error is-hidden" id="meetingTimeError">Please choose a preferred meeting time.</p>
             </div>
           </fieldset>
 
@@ -368,6 +380,7 @@
               <label for="cvFile">Upload your latest CV/Resume (PDF, max 2MB) <span class="req">*</span></label>
               <input type="file" id="cvFile" name="cvFile" accept="application/pdf" required />
               <p class="field-hint">This will be used only for program-related purposes and mentor–mentee matching.</p>
+              <p class="field-hint is-hidden" id="cvSizeNote"></p>
               <p class="field-error is-hidden" id="cvFileError"></p>
             </div>
           </fieldset>
@@ -483,9 +496,9 @@
 <footer class="site-footer">
   <div class="container">
     <div class="footer-brand">
-      <img src="assets/images/nsu_logo.png" alt="IEEE NSU Student Branch logo" />
-      <img src="assets/images/ieee-nsu-logo.png" alt="IEEE NSU Student Branch logo" />
-      <img src="assets/images/wie-logo.png" alt="" aria-hidden="true" />
+      <img src="assets/images/nsu_logo.png" width="99" height="120" alt="IEEE NSU Student Branch logo" />
+      <img src="assets/images/ieee-nsu-logo.png" width="120" height="120" alt="IEEE NSU Student Branch logo" />
+      <img src="assets/images/wie-logo.png" width="120" height="120" alt="" aria-hidden="true" />
       <!-- <strong>IEEE NSU SB WIE Affinity Group</strong> -->
     </div>
 

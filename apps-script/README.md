@@ -32,7 +32,13 @@ Uploaded CVs are **not** made link-shareable — they contain applicants' person
 5. **Deploy**, then authorize the script when prompted (it needs access to the Sheet and Drive).
 6. Copy the resulting **Web app URL** (ends in `/exec`).
 
-## 5. Turn on confirmation emails
+## 5. Prepare the Sheet (run once)
+
+In the Apps Script editor, pick **`setupSheet`** from the function dropdown and press **Run**, once. It creates the `Registrations` sheet and its header row.
+
+`doPost` used to do this check itself on every submission, which cost two Sheets round-trips per applicant to look for work that, after the first run, is never there. Run `setupSheet` again any time you add a column to `HEADERS`.
+
+## 6. Turn on confirmation emails
 
 Confirmation emails are **not** sent by the web app itself — `MailApp.sendEmail` takes 1–3 seconds, and that time would be added to every applicant's wait on the submit button. They're sent by a background trigger instead.
 
@@ -40,7 +46,7 @@ In the Apps Script editor, pick **`createEmailTrigger`** from the function dropd
 
 Applicants therefore get their confirmation up to ~5 minutes after registering, rather than instantly. If you skip this step, registrations are still saved correctly — nobody just gets a confirmation email.
 
-## 6. Point the site at it
+## 7. Point the site at it
 
 Paste the URL into `js/config.js`:
 
@@ -70,14 +76,23 @@ If you edit `Code.gs` after the first deploy, you must create a **new deployment
 Every `doPost` logs a per-stage timing breakdown. Open **Executions** in the Apps Script editor, click a run, and look for a line like:
 
 ```
-doPost: parse 12ms | openSheet 890ms | dupPreCheck 210ms | uploadCv 2140ms | acquireLock 8ms | dupRecheck 190ms | appendRow 640ms | total 4090ms
+doPost: parse 12ms | openSheet 520ms | dupPreCheck 180ms | decodeCv 210ms | openFolder 190ms | createFile 1730ms | acquireLock 8ms | dupRecheck 90ms | writeRow 430ms | total 3370ms
 ```
 
 Reading it:
 
-- **The stage with the big number is your bottleneck.** `uploadCv` usually wins, because it decodes the base64 CV and writes a multi-megabyte file to Drive.
+- **The stage with the big number is your bottleneck.** `createFile` usually wins — that is the actual write of the CV to Drive, and it is the one step here with no cheaper equivalent.
+- **`decodeCv` and `openFolder`** are the base64 decode and the Drive folder lookup that precede it, split out so a slow `createFile` isn't blamed for their time.
 - **`total` starts when `doPost` starts — after Google has spun up the script container.** If the Executions view reports a duration noticeably higher than `total`, that gap is container cold start. It happens before any of this code runs and can't be optimized away. Submit twice in a row: the second request is warm, and the difference between the two is the cold start.
 - **Neither number includes the applicant's upload.** Time spent pushing the request body from their browser to Google happens before `doPost` is invoked and never appears here. If a user reports a 25-second wait while Executions shows 5 seconds, the missing 20 seconds is upload bandwidth — the only fix for that is to stop sending the CV on the submit request.
+
+`doPost` also returns its `total` to the browser as `ms`, and `js/form.js` prints the two halves side by side in the browser console on every submission:
+
+```
+[submit] payload 40ms | network+server 3900ms | of which Apps Script 3370ms | total 3940ms
+```
+
+`network+server` minus `Apps Script` is upload time plus container cold start. Comparing the browser's `total` against the Executions duration is the quickest way to tell a slow upload apart from a slow script.
 
 The timing helper is `startTimer()` at the top of `Code.gs`; deleting the `timer.*` calls removes it with no other effect.
 
@@ -88,6 +103,7 @@ Whenever `Code.gs` changes (including the fixes above), you must push the update
 1. Open your project at [script.google.com](https://script.google.com).
 2. Replace the file contents with the latest `apps-script/Code.gs`, keeping your own `SPREADSHEET_ID` and `CV_FOLDER_ID` values.
 3. **Deploy → Manage deployments → edit (pencil) → Version: New version → Deploy.**
-4. If you haven't already, run **`createEmailTrigger`** once (step 5 above) — without it, confirmation emails are never sent.
+4. Run **`setupSheet`** once (step 5 above) if you have not already, or if you added a column to `HEADERS`.
+5. If you haven't already, run **`createEmailTrigger`** once (step 6 above) — without it, confirmation emails are never sent.
 
 Saving alone does not update the live `/exec` URL's behavior — only a new deployment version does.
