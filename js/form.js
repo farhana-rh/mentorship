@@ -15,7 +15,20 @@
   function populateSelect(id, options, placeholder) {
     var select = document.getElementById(id);
     if (!select) return;
-    select.appendChild(el("option", { value: "", disabled: true, selected: true, textContent: placeholder }));
+    var first = el("option", { value: "", disabled: true, textContent: placeholder });
+    /* defaultSelected is the `selected` ATTRIBUTE; .selected is the live property. Both
+     * are set here, and the attribute is the one that matters.
+     *
+     * form.reset() restores every option's DEFAULT selectedness, which comes from the
+     * attribute — so a placeholder marked only by the property lost its selection on the
+     * reset that runs after a successful submit. The browser then falls back to the first
+     * option that is not disabled, and the placeholder is disabled, so every dropdown came
+     * back showing its first real entry. On the mentor selects that meant all three read
+     * "Achia Nila", which also tripped the "choose a different mentor for each preference"
+     * error the moment the next applicant tried to submit. */
+    first.defaultSelected = true;
+    first.selected = true;
+    select.appendChild(first);
     options.forEach(function (opt) {
       select.appendChild(el("option", { value: opt, textContent: opt }));
     });
@@ -603,6 +616,11 @@
           if (data.status !== "ok") throw new Error(data.message || "Something went wrong. Please try again.");
           form.reset();
           document.querySelectorAll(".other-input").forEach(function (i) { i.classList.add("is-hidden"); });
+          // reset() empties the file input but leaves these two behind: the size warning
+          // would still be describing a CV that is no longer attached, and cvCache would
+          // hold that CV's base64 — megabytes of string — until the page is closed.
+          if (cvSizeNote) cvSizeNote.classList.add("is-hidden");
+          cvCache = null;
           setStatus("You're registered! We'll be in touch by email.", "success");
         })
         .catch(function (err) {
