@@ -1304,7 +1304,10 @@ button:focus-visible,
   margin-bottom: 18px;
 }
 
-.footer-brand img { height: 34px; }
+/* width:auto matters here: the markup carries width/height attributes to reserve space
+   and stop the footer jumping as the logos load, and without this the attribute width
+   wins and every logo is squashed to 120x34. Same reason .brand img has it. */
+.footer-brand img { height: 34px; width: auto; }
 
 .footer-brand strong {
   font-family: var(--font-display);
